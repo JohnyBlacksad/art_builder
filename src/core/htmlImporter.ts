@@ -63,9 +63,9 @@ const tailwindColors: Record<string, string> = {
 }
 
 function sizeValue(n: string): string {
+  if (n.includes('/')) return n
   const num = parseFloat(n)
   if (isNaN(num)) return n
-  if (n.includes('/')) return n
   return `${num * 0.25}rem`
 }
 
@@ -146,7 +146,7 @@ function parseTailwindClasses(className: string): Record<string, string> {
     if (wMatch) {
       const v = wMatch[1]
       if (v === 'full') style.width = '100%'
-      else if (v === 'screen') style.width = '100vw'
+      else if (v === 'screen') style.width = '100%'
       else if (v === 'auto') style.width = 'auto'
       else if (v === 'px') style.width = '1px'
       else style.width = sizeValue(v)
@@ -155,7 +155,7 @@ function parseTailwindClasses(className: string): Record<string, string> {
     if (hMatch) {
       const v = hMatch[1]
       if (v === 'full') style.height = '100%'
-      else if (v === 'screen') style.height = '100vh'
+      else if (v === 'screen') style.height = '100%'
       else if (v === 'auto') style.height = 'auto'
       else if (v === 'px') style.height = '1px'
       else style.height = sizeValue(v)
@@ -258,7 +258,7 @@ function parseTailwindClasses(className: string): Record<string, string> {
 
     if (c === 'relative') style.position = 'relative'
     if (c === 'absolute') style.position = 'absolute'
-    if (c === 'fixed') style.position = 'fixed'
+    if (c === 'fixed') style.position = 'absolute' // fixed inside canvas -> absolute
     if (c === 'sticky') style.position = 'sticky'
 
     const shadowMap: Record<string, string> = {
@@ -285,6 +285,8 @@ function parseTailwindClasses(className: string): Record<string, string> {
 
     if (c === 'aspect-square') style.aspectRatio = '1 / 1'
     if (c === 'aspect-video') style.aspectRatio = '16 / 9'
+    const aspectMatch = c.match(/^aspect-(\d+)\/(\d+)$/)
+    if (aspectMatch) style.aspectRatio = `${aspectMatch[1]} / ${aspectMatch[2]}`
 
     if (c === 'size-full') { style.width = '100%'; style.height = '100%' }
     const sizeMatch = c.match(/^size-(\d+)$/)
@@ -484,8 +486,8 @@ function elementToNode(el: Element): ComponentNode | null {
     return createNode('text', { text: el.textContent.trim(), style })
   }
 
-  // For nav/ol/ul/li/datalist/fieldset -> treat as container
-  if (['nav', 'ol', 'ul', 'li', 'datalist', 'fieldset', 'form', 'article', 'section', 'header', 'footer', 'aside', 'main'].includes(tag)) {
+  // For custom elements and semantic tags -> treat as container
+  if (['nav', 'ol', 'ul', 'li', 'datalist', 'fieldset', 'form', 'article', 'section', 'header', 'footer', 'aside', 'main', 'dialog'].includes(tag) || tag.startsWith('el-')) {
     type = 'container'
   }
 
