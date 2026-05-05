@@ -3,6 +3,7 @@ import { DndContext, type DragEndEvent, type DragOverEvent, type DragStartEvent,
 import { useStore } from './core/store'
 import { componentRegistry } from './core/registry'
 import { presetRegistry } from './core/presets'
+import { getCustomPreset } from './core/customComponents'
 import type { ComponentType } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
 import PropertiesPanel from './components/PropertiesPanel'
@@ -43,7 +44,8 @@ export default function App() {
         addNode(componentType, overData.nodeId, undefined, { ...meta.defaultProps })
       }
     } else if (activeData?.type === 'PRESET' && overData?.type === 'CONTAINER') {
-      const preset = presetRegistry[activeData.presetId as string]
+      const presetId = activeData.presetId as string
+      const preset = presetRegistry[presetId] || getCustomPreset(presetId)
       if (preset) {
         const nodes = preset.build()
         addNodes(nodes, overData.nodeId)

@@ -42,6 +42,19 @@ export function loadCustomComponents(): PresetMeta[] {
   }))
 }
 
+export function getCustomPreset(id: string): PresetMeta | undefined {
+  const saved = loadRaw()
+  const s = saved.find((x) => x.id === id)
+  if (!s) return undefined
+  return {
+    id: s.id,
+    label: s.name,
+    icon: 'Box',
+    category: 'My Components',
+    build: () => [cloneNode(s.node)],
+  }
+}
+
 export function deleteCustomComponent(id: string): void {
   const saved = loadRaw().filter((s) => s.id !== id)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(saved))
