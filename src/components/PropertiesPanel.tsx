@@ -446,6 +446,34 @@ export default function PropertiesPanel() {
           </ControlRow>
         </div>
 
+        {/* Effects */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-pink-400 uppercase tracking-wider">Effects</h3>
+          <ControlRow label="Background Image">
+            <StyleInput value={style.backgroundImage || ''} onChange={(v) => setStyle('backgroundImage', v)} placeholder="none or url(...)" />
+          </ControlRow>
+          <ControlRow label="Filter">
+            <StyleInput value={style.filter || ''} onChange={(v) => setStyle('filter', v)} placeholder="blur(8px) brightness(1.1)" />
+          </ControlRow>
+          <ControlRow label="Backdrop Filter">
+            <StyleInput value={style.backdropFilter || ''} onChange={(v) => setStyle('backdropFilter', v)} placeholder="blur(12px)" />
+          </ControlRow>
+          <ControlRow label="Opacity">
+            <div className="flex items-center gap-1 flex-1">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={parseFloat(style.opacity || '1')}
+                onChange={(e) => setStyle('opacity', e.target.value)}
+                className="flex-1 accent-pink-500"
+              />
+              <span className="text-xs text-slate-400 w-10 text-right">{style.opacity || '1'}</span>
+            </div>
+          </ControlRow>
+        </div>
+
         {/* Typography */}
         {(isTextLike || isContainer) && (
           <div className="space-y-3">

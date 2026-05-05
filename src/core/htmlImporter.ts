@@ -1,6 +1,12 @@
 import { createNode } from './store'
 import type { ComponentNode } from './types'
 
+const textSizeMap: Record<string, string> = {
+  'xs': '0.75rem', 'sm': '0.875rem', 'base': '1rem', 'lg': '1.125rem',
+  'xl': '1.25rem', '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
+  '5xl': '3rem', '6xl': '3.75rem', '7xl': '4.5rem', '8xl': '6rem', '9xl': '8rem',
+}
+
 const tailwindColors: Record<string, string> = {
   'white': '#ffffff', 'black': '#000000',
   'slate-50': '#f8fafc', 'slate-100': '#f1f5f9', 'slate-200': '#e2e8f0', 'slate-300': '#cbd5e1',
@@ -278,11 +284,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
       style.borderRadius = size ? (radiusMap[size] || sizeValue(size)) : '0.25rem'
     }
 
-    const textSizeMap: Record<string, string> = {
-      'xs': '0.75rem', 'sm': '0.875rem', 'base': '1rem', 'lg': '1.125rem',
-      'xl': '1.25rem', '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
-      '5xl': '3rem', '6xl': '3.75rem', '7xl': '4.5rem', '8xl': '6rem', '9xl': '8rem',
-    }
     const textSizeMatch = c.match(/^text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/)
     if (textSizeMatch) style.fontSize = textSizeMap[textSizeMatch[1]]
 
@@ -503,11 +504,26 @@ function elementToNode(el: Element): ComponentNode | null {
   // Headings
   if (tag.match(/^h[1-6]$/)) {
     if (el.children.length > 0) {
-      // Heading with nested elements (e.g., gradient spans) -> preserve as raw HTML
-      return createNode('raw', {
-        html: el.outerHTML,
-        style,
-      })
+      // Heading with nested elements -> split into editable children
+      const children: ComponentNode[] = []
+      for (const child of el.childNodes) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const text = child.textContent?.trim()
+          if (text) {
+            children.push(createNode('text', { text, style: {} }))
+          }
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          const node = elementToNode(child as Element)
+          if (node) children.push(node)
+        }
+      }
+      return createNode('container', {
+        style: {
+          ...style,
+          fontSize: style.fontSize || textSizeMap[tag.replace('h', '')] || '24px',
+          fontWeight: style.fontWeight || '700',
+        },
+      }, children)
     }
     return createNode('heading', {
       text: extractText(el),
