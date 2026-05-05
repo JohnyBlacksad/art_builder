@@ -65,7 +65,7 @@ const tailwindColors: Record<string, string> = {
 function sizeValue(n: string): string {
   const num = parseFloat(n)
   if (isNaN(num)) return n
-  if (n.includes('/')) return n // fractions like 1/2
+  if (n.includes('/')) return n
   return `${num * 0.25}rem`
 }
 
@@ -74,10 +74,8 @@ function parseTailwindClasses(className: string): Record<string, string> {
   const classes = className.split(/\s+/).filter(Boolean)
 
   for (const cls of classes) {
-    // Skip responsive prefixes for now
     const c = cls.replace(/^(sm|md|lg|xl|2xl):/, '')
 
-    // Display
     if (c === 'flex') style.display = 'flex'
     if (c === 'grid') style.display = 'grid'
     if (c === 'block') style.display = 'block'
@@ -85,31 +83,25 @@ function parseTailwindClasses(className: string): Record<string, string> {
     if (c === 'inline-flex') style.display = 'inline-flex'
     if (c === 'hidden') style.display = 'none'
 
-    // Flex direction
     if (c === 'flex-row') style.flexDirection = 'row'
     if (c === 'flex-col') style.flexDirection = 'column'
     if (c === 'flex-row-reverse') style.flexDirection = 'row-reverse'
     if (c === 'flex-col-reverse') style.flexDirection = 'column-reverse'
-
-    // Flex wrap
     if (c === 'flex-wrap') style.flexWrap = 'wrap'
     if (c === 'flex-nowrap') style.flexWrap = 'nowrap'
 
-    // Justify
     const justifyMatch = c.match(/^justify-(start|end|center|between|around|evenly)$/)
     if (justifyMatch) {
       const map: Record<string, string> = { start: 'flex-start', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly', center: 'center' }
       style.justifyContent = map[justifyMatch[1]]
     }
 
-    // Align items
     const itemsMatch = c.match(/^items-(start|end|center|stretch|baseline)$/)
     if (itemsMatch) {
       const map: Record<string, string> = { start: 'flex-start', end: 'flex-end', center: 'center', stretch: 'stretch', baseline: 'baseline' }
       style.alignItems = map[itemsMatch[1]]
     }
 
-    // Gap
     const gapMatch = c.match(/^gap-(\d+\.?\d*|px)$/)
     if (gapMatch) style.gap = gapMatch[1] === 'px' ? '1px' : sizeValue(gapMatch[1])
     const gapXMatch = c.match(/^gap-x-(\d+\.?\d*|px)$/)
@@ -117,7 +109,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const gapYMatch = c.match(/^gap-y-(\d+\.?\d*|px)$/)
     if (gapYMatch) style.rowGap = gapYMatch[1] === 'px' ? '1px' : sizeValue(gapYMatch[1])
 
-    // Padding
     const pMatch = c.match(/^p-(\d+\.?\d*|px)$/)
     if (pMatch) style.padding = pMatch[1] === 'px' ? '1px' : sizeValue(pMatch[1])
     const pxMatch = c.match(/^px-(\d+\.?\d*|px)$/)
@@ -133,7 +124,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const prMatch = c.match(/^pr-(\d+\.?\d*|px)$/)
     if (prMatch) style.paddingRight = prMatch[1] === 'px' ? '1px' : sizeValue(prMatch[1])
 
-    // Margin
     const mMatch = c.match(/^m-(\d+\.?\d*|px|-\d+\.?\d*)$/)
     if (mMatch) style.margin = mMatch[1] === 'px' ? '1px' : mMatch[1].startsWith('-') ? `-${sizeValue(mMatch[1].slice(1))}` : sizeValue(mMatch[1])
     const mxMatch = c.match(/^mx-(\d+\.?\d*|px)$/)
@@ -149,14 +139,9 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const mrMatch = c.match(/^mr-(\d+\.?\d*|px)$/)
     if (mrMatch) style.marginRight = mrMatch[1] === 'px' ? '1px' : sizeValue(mrMatch[1])
 
-    // Space-X (for flex children)
     const spaceXMatch = c.match(/^space-x-(\d+\.?\d*|px)$/)
-    if (spaceXMatch) {
-      // Handled as gap for simplicity
-      style.gap = spaceXMatch[1] === 'px' ? '1px' : sizeValue(spaceXMatch[1])
-    }
+    if (spaceXMatch) style.gap = spaceXMatch[1] === 'px' ? '1px' : sizeValue(spaceXMatch[1])
 
-    // Width / Height
     const wMatch = c.match(/^w-(\d+\.?\d*|px|full|screen|auto)$/)
     if (wMatch) {
       const v = wMatch[1]
@@ -185,7 +170,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
       else style.maxWidth = sizeValue(v)
     }
 
-    // Grid
     const gridColsMatch = c.match(/^grid-cols-(\d+|none)$/)
     if (gridColsMatch) {
       if (gridColsMatch[1] === 'none') style.gridTemplateColumns = 'none'
@@ -200,7 +184,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const rowStartMatch = c.match(/^row-start-(\d+)$/)
     if (rowStartMatch) style.gridRowStart = rowStartMatch[1]
 
-    // Colors
     const bgMatch = c.match(/^bg-(.+)$/)
     if (bgMatch) {
       const color = tailwindColors[bgMatch[1]] || bgMatch[1]
@@ -217,7 +200,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
       style.borderColor = color
     }
 
-    // Border
     if (c === 'border') style.borderWidth = '1px'
     if (c === 'border-0') style.borderWidth = '0'
     if (c === 'border-2') style.borderWidth = '2px'
@@ -236,7 +218,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
       style.borderRadius = size ? (radiusMap[size] || sizeValue(size)) : '0.25rem'
     }
 
-    // Font size
     const textSizeMap: Record<string, string> = {
       'xs': '0.75rem', 'sm': '0.875rem', 'base': '1rem', 'lg': '1.125rem',
       'xl': '1.25rem', '2xl': '1.5rem', '3xl': '1.875rem', '4xl': '2.25rem',
@@ -245,7 +226,6 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const textSizeMatch = c.match(/^text-(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl|7xl|8xl|9xl)$/)
     if (textSizeMatch) style.fontSize = textSizeMap[textSizeMatch[1]]
 
-    // Font weight
     const fontWeightMap: Record<string, string> = {
       'thin': '100', 'extralight': '200', 'light': '300', 'normal': '400',
       'medium': '500', 'semibold': '600', 'bold': '700', 'extrabold': '800', 'black': '900',
@@ -253,41 +233,34 @@ function parseTailwindClasses(className: string): Record<string, string> {
     const fontWeightMatch = c.match(/^font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)$/)
     if (fontWeightMatch) style.fontWeight = fontWeightMap[fontWeightMatch[1]]
 
-    // Text align
     const textAlignMatch = c.match(/^text-(left|center|right|justify)$/)
     if (textAlignMatch) style.textAlign = textAlignMatch[1]
 
-    // Letter spacing
     const trackingMatch = c.match(/^tracking-(tighter|tight|normal|wide|wider|widest)$/)
     if (trackingMatch) {
       const map: Record<string, string> = { tighter: '-0.05em', tight: '-0.025em', normal: '0', wide: '0.025em', wider: '0.05em', widest: '0.1em' }
       style.letterSpacing = map[trackingMatch[1]]
     }
 
-    // Line height
     const leadingMatch = c.match(/^leading-(\d+|none|tight|snug|normal|relaxed|loose)$/)
     if (leadingMatch) {
       const map: Record<string, string> = { none: '1', tight: '1.25', snug: '1.375', normal: '1.5', relaxed: '1.625', loose: '2' }
       style.lineHeight = map[leadingMatch[1]] || leadingMatch[1]
     }
 
-    // Text transform
     if (c === 'uppercase') style.textTransform = 'uppercase'
     if (c === 'lowercase') style.textTransform = 'lowercase'
     if (c === 'capitalize') style.textTransform = 'capitalize'
 
-    // Overflow
     if (c === 'overflow-hidden') style.overflow = 'hidden'
     if (c === 'overflow-auto') style.overflow = 'auto'
     if (c === 'overflow-visible') style.overflow = 'visible'
 
-    // Position
     if (c === 'relative') style.position = 'relative'
     if (c === 'absolute') style.position = 'absolute'
     if (c === 'fixed') style.position = 'fixed'
     if (c === 'sticky') style.position = 'sticky'
 
-    // Shadows
     const shadowMap: Record<string, string> = {
       'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
       'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
@@ -298,35 +271,27 @@ function parseTailwindClasses(className: string): Record<string, string> {
     if (shadowMatch) style.boxShadow = shadowMap[shadowMatch[1]?.slice(1) || 'md'] || shadowMap.md
     if (c === 'shadow-none') style.boxShadow = 'none'
 
-    // Opacity
     const opacityMatch = c.match(/^opacity-(\d+|\d+)$/)
     if (opacityMatch) style.opacity = String(parseInt(opacityMatch[1]) / 100)
 
-    // Cursor
     if (c === 'cursor-pointer') style.cursor = 'pointer'
 
-    // Object fit
     if (c === 'object-cover') style.objectFit = 'cover'
     if (c === 'object-contain') style.objectFit = 'contain'
     if (c === 'object-fill') style.objectFit = 'fill'
 
-    // Z-index
     const zMatch = c.match(/^z-(\d+)$/)
     if (zMatch) style.zIndex = zMatch[1]
 
-    // Aspect ratio (simple)
     if (c === 'aspect-square') style.aspectRatio = '1 / 1'
     if (c === 'aspect-video') style.aspectRatio = '16 / 9'
 
-    // Size helpers
     if (c === 'size-full') { style.width = '100%'; style.height = '100%' }
     const sizeMatch = c.match(/^size-(\d+)$/)
     if (sizeMatch) { const v = sizeValue(sizeMatch[1]); style.width = v; style.height = v }
 
-    // Inset-0
     if (c === 'inset-0') { style.top = '0'; style.right = '0'; style.bottom = '0'; style.left = '0' }
 
-    // Top/Right/Bottom/Left
     const topMatch = c.match(/^top-(\d+)$/)
     if (topMatch) style.top = sizeValue(topMatch[1])
     const rightMatch = c.match(/^right-(\d+)$/)
@@ -348,20 +313,33 @@ function extractText(el: Element): string {
   return el.textContent?.trim() || ''
 }
 
+function serializeSvg(el: Element): string {
+  const serializer = new XMLSerializer()
+  return serializer.serializeToString(el)
+}
+
 function elementToNode(el: Element): ComponentNode | null {
   const tag = el.tagName.toLowerCase()
 
   // Skip script/style/head/meta/link/title
   if (['script', 'style', 'head', 'meta', 'link', 'title', 'noscript'].includes(tag)) return null
 
-  // Skip SVG for now
-  if (tag === 'svg' || tag === 'path' || tag === 'circle' || tag === 'rect' || tag === 'line' || tag === 'polyline' || tag === 'polygon') return null
+  // SVG elements — serialize to raw HTML
+  if (tag === 'svg') {
+    return createNode('raw', {
+      html: serializeSvg(el),
+      style: { display: 'inline-block', width: '1.25rem', height: '1.25rem' },
+    })
+  }
+  if (['path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'g', 'defs', 'use', 'clipPath'].includes(tag)) {
+    // These should be inside <svg>, skip individually
+    return null
+  }
 
   const className = (el.getAttribute('class') || '')
   const style = parseTailwindClasses(className)
   const inlineStyle = el.getAttribute('style')
   if (inlineStyle) {
-    // Merge inline styles (they override tailwind)
     inlineStyle.split(';').forEach(rule => {
       const [k, v] = rule.split(':').map(s => s.trim())
       if (k && v) style[k] = v
@@ -378,7 +356,7 @@ function elementToNode(el: Element): ComponentNode | null {
   }
 
   // Button
-  if (tag === 'button' || (tag === 'a' && className.includes('bg-') && className.includes('rounded'))) {
+  if (tag === 'button') {
     return createNode('button', {
       text: extractText(el),
       style,
@@ -394,17 +372,81 @@ function elementToNode(el: Element): ComponentNode | null {
     })
   }
 
+  // Radio input inside a styled div -> styled circle
+  if (tag === 'input' && (el as HTMLInputElement).type === 'radio') {
+    // Check if parent is a styled circle container
+    const parent = el.parentElement
+    if (parent && parent.className.includes('rounded-full')) {
+      const parentStyle = parseTailwindClasses(parent.getAttribute('class') || '')
+      const bgClass = Array.from(parent.classList).find(c => c.startsWith('bg-'))
+      if (bgClass) {
+        const colorMatch = bgClass.match(/^bg-(.+)$/)
+        if (colorMatch) {
+          parentStyle.backgroundColor = tailwindColors[colorMatch[1]] || colorMatch[1]
+        }
+      }
+      return createNode('container', {
+        style: {
+          ...parentStyle,
+          width: '2rem',
+          height: '2rem',
+          borderRadius: '50%',
+          border: parentStyle.borderColor ? `2px solid ${parentStyle.borderColor}` : '2px solid #e2e8f0',
+        },
+      })
+    }
+    // Default radio -> small circle
+    return createNode('container', {
+      style: {
+        width: '1.25rem',
+        height: '1.25rem',
+        borderRadius: '50%',
+        border: '2px solid #cbd5e1',
+        backgroundColor: '#ffffff',
+      },
+    })
+  }
+
+  // Label containing radio + span -> button with span text
+  if (tag === 'label') {
+    const input = el.querySelector('input')
+    const span = el.querySelector('span')
+    if (input && span) {
+      const text = span.textContent?.trim() || ''
+      // Check if disabled
+      const isDisabled = input.hasAttribute('disabled')
+      const checked = (input as HTMLInputElement).checked
+      const labelStyle = { ...style }
+      if (isDisabled) {
+        labelStyle.opacity = '0.5'
+        labelStyle.cursor = 'not-allowed'
+      }
+      if (checked) {
+        labelStyle.backgroundColor = labelStyle.backgroundColor || '#4f46e5'
+        labelStyle.color = '#ffffff'
+        labelStyle.borderColor = '#4f46e5'
+      }
+      return createNode('button', {
+        text,
+        style: {
+          ...labelStyle,
+          padding: '0.75rem 1.5rem',
+          borderRadius: '0.5rem',
+          border: '1px solid #e2e8f0',
+          fontSize: '0.875rem',
+          fontWeight: '500',
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+        },
+      })
+    }
+  }
+
   // Text elements (leaf)
-  if ((tag === 'p' || tag === 'span' || tag === 'a' || tag === 'label' || tag === 'small') && el.children.length === 0) {
+  if ((tag === 'p' || tag === 'span' || tag === 'a' || tag === 'small') && el.children.length === 0) {
     return createNode('text', {
       text: extractText(el),
       style,
     })
-  }
-
-  // Divider / HR
-  if (tag === 'hr') {
-    return createNode('divider', { style })
   }
 
   // Input / Textarea as placeholder text
@@ -415,6 +457,11 @@ function elementToNode(el: Element): ComponentNode | null {
     })
   }
 
+  // HR
+  if (tag === 'hr') {
+    return createNode('divider', { style })
+  }
+
   // Container elements
   const children: ComponentNode[] = []
   for (const child of el.children) {
@@ -422,7 +469,7 @@ function elementToNode(el: Element): ComponentNode | null {
     if (node) children.push(node)
   }
 
-  // Determine container type based on classes
+  // Determine container type
   let type: 'container' | 'flex' | 'grid' = 'container'
   if (style.display === 'flex' || className.includes('flex')) type = 'flex'
   if (style.display === 'grid' || className.includes('grid')) type = 'grid'
@@ -430,6 +477,11 @@ function elementToNode(el: Element): ComponentNode | null {
   // If container has only text children, merge into text node
   if (children.length === 0 && el.textContent?.trim()) {
     return createNode('text', { text: el.textContent.trim(), style })
+  }
+
+  // For nav/ol/ul/li/datalist/fieldset -> treat as container
+  if (['nav', 'ol', 'ul', 'li', 'datalist', 'fieldset', 'form', 'article', 'section', 'header', 'footer', 'aside', 'main'].includes(tag)) {
+    type = 'container'
   }
 
   return createNode(type, { style }, children)

@@ -206,6 +206,14 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       }
       return <div {...commonProps} />
 
+    case 'raw': {
+      const html = (node.props.html as string) || ''
+      if (isAnimated) {
+        return <motion.div {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />
+      }
+      return <div {...commonProps} dangerouslySetInnerHTML={{ __html: html }} />
+    }
+
     default:
       if (isAnimated) {
         return <motion.div {...commonProps} {...motionProps}>Unknown: {node.type}</motion.div>

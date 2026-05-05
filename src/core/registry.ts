@@ -142,6 +142,15 @@ export const componentRegistry: Record<ComponentType, ComponentMeta> = {
       },
     },
   },
+  raw: {
+    type: 'raw',
+    label: 'Raw HTML',
+    icon: 'Code',
+    category: 'basic',
+    defaultProps: {
+      html: '',
+    },
+  },
 }
 
 export function getMeta(type: ComponentType): ComponentMeta {

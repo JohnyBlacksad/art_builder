@@ -8,6 +8,7 @@ export type ComponentType =
   | 'spacer'
   | 'flex'
   | 'grid'
+  | 'raw'
 
 export interface AnimationConfig {
   type: 'none' | 'fade-in' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'scale' | 'rotate' | 'flip'
