@@ -1,10 +1,13 @@
 import { useEffect } from 'react'
 import { useStore } from '../core/store'
+import { useState } from 'react'
 import { exportToHTML } from '../core/exporter'
 import { saveCustomComponent } from '../core/customComponents'
-import { ZoomIn, ZoomOut, Monitor, Smartphone, Download, Undo2, Redo2, Save } from 'lucide-react'
+import HtmlImportModal from './HtmlImportModal'
+import { ZoomIn, ZoomOut, Monitor, Smartphone, Download, Undo2, Redo2, Save, FileCode } from 'lucide-react'
 
 export default function Toolbar() {
+  const [showImport, setShowImport] = useState(false)
   const zoom = useStore((s) => s.zoom)
   const setZoom = useStore((s) => s.setZoom)
   const root = useStore((s) => s.root)
@@ -45,6 +48,7 @@ export default function Toolbar() {
   }
 
   return (
+    <>
     <div className="h-12 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4">
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-slate-100">ArtBuilder</span>
@@ -98,6 +102,14 @@ export default function Toolbar() {
 
         <div className="w-px h-4 bg-slate-700 mx-1" />
 
+        <button
+          onClick={() => setShowImport(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium transition-colors"
+        >
+          <FileCode className="w-3.5 h-3.5" />
+          Import HTML
+        </button>
+
         {selectedId && selectedId !== 'root' && (
           <button
             onClick={() => {
@@ -132,5 +144,7 @@ export default function Toolbar() {
         </button>
       </div>
     </div>
+    {showImport && <HtmlImportModal onClose={() => setShowImport(false)} />}
+    </>
   )
 }
