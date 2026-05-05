@@ -769,4 +769,96 @@ export const presetRegistry: Record<string, PresetMeta> = {
       ]),
     ],
   },
+
+  animatedGallery: {
+    id: 'animatedGallery',
+    label: 'Animated Gallery',
+    icon: 'Sparkles',
+    category: 'Sections',
+    build: () => [
+      createNode('container', {
+        style: {
+          padding: '80px 48px',
+          backgroundColor: '#0f172a',
+        },
+        animation: {
+          type: 'fade-in',
+          trigger: 'load',
+          duration: 0.8,
+          delay: 0,
+          ease: 'easeOut',
+          stagger: 0.1,
+        },
+      }, [
+        createNode('heading', {
+          text: 'Motion Gallery',
+          level: 'h2',
+          style: {
+            fontSize: '42px',
+            fontWeight: '800',
+            textAlign: 'center',
+            color: '#ffffff',
+            marginBottom: '16px',
+          },
+        }),
+        createNode('text', {
+          text: 'Hover over the images to see them come alive',
+          style: {
+            fontSize: '18px',
+            textAlign: 'center',
+            color: '#94a3b8',
+            marginBottom: '56px',
+          },
+        }),
+        createNode('grid', {
+          style: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '20px',
+            background: 'transparent',
+            border: 'none',
+            padding: '0',
+          },
+        }, [
+          ...[
+            { src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop', anim: 'scale' },
+            { src: 'https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?w=400&auto=format&fit=crop', anim: 'rotate' },
+            { src: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=400&auto=format&fit=crop', anim: 'slide-up' },
+            { src: 'https://images.unsplash.com/photo-1618172193622-ae2d025f4032?w=400&auto=format&fit=crop', anim: 'flip' },
+            { src: 'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=400&auto=format&fit=crop', anim: 'slide-left' },
+            { src: 'https://images.unsplash.com/photo-1614850715649-1d0106293bd1?w=400&auto=format&fit=crop', anim: 'fade-in' },
+          ].map(({ src, anim }) =>
+            createNode('container', {
+              style: {
+                padding: '0',
+                background: 'transparent',
+                border: 'none',
+                borderRadius: '16px',
+                overflow: 'hidden',
+              },
+            }, [
+              createNode('image', {
+                src,
+                alt: 'Gallery',
+                style: {
+                  width: '100%',
+                  height: '280px',
+                  objectFit: 'cover',
+                  borderRadius: '16px',
+                },
+                animation: {
+                  type: anim as any,
+                  trigger: 'hover',
+                  duration: 0.4,
+                  delay: 0,
+                  ease: 'easeOut',
+                  stagger: 0,
+                },
+              }),
+            ])
+          ),
+        ]),
+      ]),
+    ],
+  },
 }

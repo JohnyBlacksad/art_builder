@@ -9,10 +9,20 @@ export type ComponentType =
   | 'flex'
   | 'grid'
 
+export interface AnimationConfig {
+  type: 'none' | 'fade-in' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'scale' | 'rotate' | 'flip'
+  trigger: 'load' | 'hover' | 'in-view'
+  duration: number
+  delay: number
+  ease: string
+  stagger: number
+}
+
 export interface BaseProps {
   id?: string
   className?: string
   style?: React.CSSProperties
+  animation?: AnimationConfig
 }
 
 export interface ComponentNode {

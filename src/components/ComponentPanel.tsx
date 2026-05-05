@@ -5,14 +5,14 @@ import { presetRegistry } from '../core/presets'
 import { useState, useEffect } from 'react'
 import {
   Square, Rows, Grid3x3, Heading, Type, MousePointerClick, Image, Minus, MoveVertical,
-  Menu, Layout, CreditCard, PanelBottom, Tags, MessageSquare, BarChart3, Megaphone, Mail, Images, Box
+  Menu, Layout, CreditCard, PanelBottom, Tags, MessageSquare, BarChart3, Megaphone, Mail, Images, Box, Sparkles
 } from 'lucide-react'
 import { loadCustomComponents } from '../core/customComponents'
 import type { PresetMeta } from '../core/presets'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Square, Rows, Grid3x3, Heading, Type, MousePointerClick, Image, Minus, MoveVertical,
-  Menu, Layout, CreditCard, PanelBottom, Tags, MessageSquare, BarChart3, Megaphone, Mail, Images, Box,
+  Menu, Layout, CreditCard, PanelBottom, Tags, MessageSquare, BarChart3, Megaphone, Mail, Images, Box, Sparkles,
 }
 
 function DraggableItem({ id, label, icon, data }: { id: string; label: string; icon: string; data: Record<string, unknown> }) {

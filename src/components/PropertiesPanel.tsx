@@ -98,10 +98,17 @@ export default function PropertiesPanel() {
 
   const meta = componentRegistry[node.type]
   const style = (node.props.style as Record<string, string>) || {}
+  const anim = (node.props.animation as Record<string, any>) || { type: 'none' }
 
   const setStyle = (key: string, value: string) => {
     updateProps(node.id, {
       style: { ...style, [key]: value },
+    })
+  }
+
+  const setAnim = (partial: Record<string, any>) => {
+    updateProps(node.id, {
+      animation: { ...anim, ...partial },
     })
   }
 
@@ -372,6 +379,80 @@ export default function PropertiesPanel() {
             </ControlRow>
           </div>
         )}
+
+        {/* Animation */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Animation</h3>
+          <ControlRow label="Type">
+            <StyleSelect
+              value={anim?.type || 'none'}
+              onChange={(v) => setAnim({ type: v as any })}
+              options={['none', 'fade-in', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'scale', 'rotate', 'flip']}
+            />
+          </ControlRow>
+          {anim?.type && anim.type !== 'none' && (
+            <>
+              <ControlRow label="Trigger">
+                <StyleSelect
+                  value={anim?.trigger || 'load'}
+                  onChange={(v) => setAnim({ trigger: v as any })}
+                  options={['load', 'hover', 'in-view']}
+                />
+              </ControlRow>
+              <ControlRow label="Duration">
+                <div className="flex items-center gap-1 flex-1">
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="3"
+                    step="0.1"
+                    value={anim?.duration ?? 0.5}
+                    onChange={(e) => setAnim({ duration: parseFloat(e.target.value) })}
+                    className="flex-1 accent-purple-500"
+                  />
+                  <span className="text-xs text-slate-400 w-10 text-right">{anim?.duration ?? 0.5}s</span>
+                </div>
+              </ControlRow>
+              <ControlRow label="Delay">
+                <div className="flex items-center gap-1 flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value={anim?.delay ?? 0}
+                    onChange={(e) => setAnim({ delay: parseFloat(e.target.value) })}
+                    className="flex-1 accent-purple-500"
+                  />
+                  <span className="text-xs text-slate-400 w-10 text-right">{anim?.delay ?? 0}s</span>
+                </div>
+              </ControlRow>
+              <ControlRow label="Ease">
+                <StyleSelect
+                  value={anim?.ease || 'easeInOut'}
+                  onChange={(v) => setAnim({ ease: v })}
+                  options={['linear', 'easeIn', 'easeOut', 'easeInOut', 'circIn', 'circOut', 'backIn', 'backOut', 'backInOut']}
+                />
+              </ControlRow>
+              {isContainer && (
+                <ControlRow label="Stagger">
+                  <div className="flex items-center gap-1 flex-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max="0.5"
+                      step="0.05"
+                      value={anim?.stagger ?? 0}
+                      onChange={(e) => setAnim({ stagger: parseFloat(e.target.value) })}
+                      className="flex-1 accent-purple-500"
+                    />
+                    <span className="text-xs text-slate-400 w-10 text-right">{anim?.stagger ?? 0}s</span>
+                  </div>
+                </ControlRow>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
