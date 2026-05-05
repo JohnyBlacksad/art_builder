@@ -372,38 +372,43 @@ function elementToNode(el: Element): ComponentNode | null {
     })
   }
 
-  // Radio input inside a styled div -> styled circle
-  if (tag === 'input' && (el as HTMLInputElement).type === 'radio') {
-    // Check if parent is a styled circle container
+  // Input elements -> styled placeholders
+  if (tag === 'input') {
+    const inputType = (el as HTMLInputElement).type || 'text'
+    const inputClass = el.getAttribute('class') || ''
+    const inputStyle = parseTailwindClasses(inputClass)
     const parent = el.parentElement
-    if (parent && parent.className.includes('rounded-full')) {
-      const parentStyle = parseTailwindClasses(parent.getAttribute('class') || '')
-      const bgClass = Array.from(parent.classList).find(c => c.startsWith('bg-'))
-      if (bgClass) {
-        const colorMatch = bgClass.match(/^bg-(.+)$/)
-        if (colorMatch) {
-          parentStyle.backgroundColor = tailwindColors[colorMatch[1]] || colorMatch[1]
+
+    // Radio / checkbox inside rounded-full container -> styled circle
+    if ((inputType === 'radio' || inputType === 'checkbox') && parent) {
+      // If parent or input itself has rounded-full
+      if (parent.className.includes('rounded-full') || inputClass.includes('rounded-full')) {
+        const sizeClass = inputClass.match(/size-(\d+)/) || inputClass.match(/w-(\d+)/)
+        const size = sizeClass ? sizeValue(sizeClass[1]) : '2rem'
+        const bgClass = Array.from(el.classList).find(c => c.startsWith('bg-'))
+        if (bgClass) {
+          const colorMatch = bgClass.match(/^bg-(.+)$/)
+          if (colorMatch) {
+            inputStyle.backgroundColor = tailwindColors[colorMatch[1]] || colorMatch[1]
+          }
         }
+        return createNode('container', {
+          style: {
+            ...inputStyle,
+            width: size,
+            height: size,
+            borderRadius: '50%',
+            border: inputStyle.borderColor ? `2px solid ${inputStyle.borderColor}` : '2px solid #e2e8f0',
+            flexShrink: 0,
+          },
+        })
       }
-      return createNode('container', {
-        style: {
-          ...parentStyle,
-          width: '2rem',
-          height: '2rem',
-          borderRadius: '50%',
-          border: parentStyle.borderColor ? `2px solid ${parentStyle.borderColor}` : '2px solid #e2e8f0',
-        },
-      })
     }
-    // Default radio -> small circle
-    return createNode('container', {
-      style: {
-        width: '1.25rem',
-        height: '1.25rem',
-        borderRadius: '50%',
-        border: '2px solid #cbd5e1',
-        backgroundColor: '#ffffff',
-      },
+
+    // Default input -> text placeholder
+    return createNode('text', {
+      text: el.getAttribute('placeholder') || `[${inputType}]`,
+      style: { ...inputStyle, color: '#94a3b8', padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px' },
     })
   }
 

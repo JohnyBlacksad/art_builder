@@ -18,7 +18,7 @@ const handlePositions = [
 
 function parseSize(val: string | undefined): { num: number; unit: string } {
   if (!val) return { num: 100, unit: 'px' }
-  const match = String(val).match(/^([\d.]+)(.*)$/)
+  const match = String(val).match(/^(\d+\.?\d*)(.*)$/)
   if (match) return { num: parseFloat(match[1]), unit: match[2] || 'px' }
   return { num: 100, unit: 'px' }
 }
@@ -64,12 +64,12 @@ export default function ResizeHandles({ nodeId }: Props) {
       if (direction.includes('s')) newH += dy
       if (direction.includes('n')) newH -= dy
 
-      if (newW < 20) newW = 20
-      if (newH < 20) newH = 20
+      if (newW < 10) newW = 10
+      if (newH < 10) newH = 10
 
-      const nextStyle = { ...style, width: `${Math.round(newW)}${w.unit}`, height: `${Math.round(newH)}${h.unit}` }
-      if (!style.width) delete nextStyle.width
-      if (!style.height) delete nextStyle.height
+      const nextStyle = { ...style }
+      nextStyle.width = `${Math.round(newW)}${w.unit}`
+      nextStyle.height = `${Math.round(newH)}${h.unit}`
 
       updateProps(nodeId, { style: nextStyle })
     }
@@ -89,7 +89,7 @@ export default function ResizeHandles({ nodeId }: Props) {
         <div
           key={pos}
           className="absolute w-2 h-2 bg-blue-500 border border-white rounded-full z-50"
-          style={{ ...posStyle, cursor, position: 'absolute' }}
+          style={{ ...posStyle, cursor }}
           onMouseDown={(e) => startResize(e, pos)}
         />
       ))}

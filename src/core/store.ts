@@ -88,9 +88,11 @@ const defaultRoot: ComponentNode = {
   type: 'container',
   props: {
     style: {
+      position: 'relative',
       minHeight: '100vh',
       padding: '24px',
       backgroundColor: '#ffffff',
+      overflow: 'hidden',
     } as React.CSSProperties,
   },
   children: [],
