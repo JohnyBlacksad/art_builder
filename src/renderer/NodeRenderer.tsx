@@ -386,31 +386,61 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 
     case 'accordion': {
       const items = (node.props.items as any[]) || []
-      return wrapHandles(<Accordion items={items} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Accordion items={items} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'dialog': {
       const triggerText = (node.props.triggerText as string) || 'Open'
       const dialogTitle = (node.props.title as string) || 'Title'
       const dialogContent = (node.props.content as string) || 'Content'
-      return wrapHandles(<Dialog triggerText={triggerText} title={dialogTitle} content={dialogContent} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Dialog triggerText={triggerText} title={dialogTitle} content={dialogContent} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'tabs': {
       const tabs = (node.props.tabs as any[]) || []
-      return wrapHandles(<Tabs tabs={tabs} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Tabs tabs={tabs} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'select': {
       const options = (node.props.options as string[]) || []
       const placeholder = (node.props.placeholder as string) || 'Select...'
-      return wrapHandles(<Select options={options} placeholder={placeholder} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Select options={options} placeholder={placeholder} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'tooltip': {
       const tooltipContent = (node.props.content as string) || 'Tooltip'
       const triggerText = (node.props.triggerText as string) || 'Hover me'
-      return wrapHandles(<Tooltip content={tooltipContent} triggerText={triggerText} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Tooltip content={tooltipContent} triggerText={triggerText} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'slider': {
@@ -418,13 +448,25 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const max = (node.props.max as number) ?? 100
       const step = (node.props.step as number) ?? 1
       const defaultValue = (node.props.defaultValue as number) ?? 50
-      return wrapHandles(<Slider min={min} max={max} step={step} defaultValue={defaultValue} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Slider min={min} max={max} step={step} defaultValue={defaultValue} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     case 'switch': {
       const label = (node.props.label as string) || 'Toggle'
       const defaultChecked = !!node.props.defaultChecked
-      return wrapHandles(<Switch label={label} defaultChecked={defaultChecked} style={baseStyle} />, showHandles, node.id)
+      return wrapHandles(
+        <div onClick={handleClick} data-node-id={node.id} style={baseStyle}>
+          <Switch label={label} defaultChecked={defaultChecked} style={{}} />
+        </div>,
+        showHandles,
+        node.id
+      )
     }
 
     default:
