@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { motion, type Transition } from 'framer-motion'
+import { useState, useEffect } from 'react'
 import ParticlesCanvas from '../components/ParticlesCanvas'
 import ResizeHandles from '../components/ResizeHandles'
 import { useStore } from '../core/store'
@@ -22,6 +23,17 @@ const easeMap: Record<string, string> = {
   backOut: 'backOut',
   backInOut: 'backInOut',
   spring: 'spring',
+}
+
+const hoverTargets: Record<string, Record<string, any>> = {
+  'fade-in': { opacity: 0.7 },
+  'slide-up': { y: -10 },
+  'slide-down': { y: 10 },
+  'slide-left': { x: -10 },
+  'slide-right': { x: 10 },
+  scale: { scale: 1.05 },
+  rotate: { rotate: 5 },
+  flip: { rotateY: 15 },
 }
 
 function getAnimationProps(animation: AnimationConfig | undefined, isContainer: boolean) {
@@ -62,7 +74,7 @@ function getAnimationProps(animation: AnimationConfig | undefined, isContainer: 
 
   if (animation.trigger === 'hover') {
     return {
-      whileHover: variant.visible,
+      whileHover: hoverTargets[animation.type] || variant.visible,
       transition,
     }
   }
@@ -95,6 +107,18 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const selectedId = useStore((s) => s.selectedId)
   const selectNode = useStore((s) => s.selectNode)
   const isSelected = selectedId === node.id
+  const [playTick, setPlayTick] = useState(0)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const custom = e as CustomEvent<string>
+      if (custom.detail === node.id) {
+        setPlayTick((t) => t + 1)
+      }
+    }
+    window.addEventListener('artbuilder:play-animation', handler)
+    return () => window.removeEventListener('artbuilder:play-animation', handler)
+  }, [node.id])
 
   const isContainer = ['container', 'flex', 'grid'].includes(node.type)
 
@@ -137,6 +161,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     if (isAnimated) {
       return wrapHandles(
         <motion.div
+          key={playTick}
           ref={preview ? undefined : setNodeRef}
           className={baseClass}
           style={baseStyle}
@@ -180,7 +205,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const Tag = level as keyof JSX.IntrinsicElements
       if (isAnimated) {
         const MotionTag = motion[Tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6']
-        return wrapHandles(<MotionTag {...commonProps} {...motionProps}>{text}</MotionTag>, showHandles, node.id)
+        return wrapHandles(<MotionTag key={playTick} {...commonProps} {...motionProps}>{text}</MotionTag>, showHandles, node.id)
       }
       return wrapHandles(<Tag {...commonProps}>{text}</Tag>, showHandles, node.id)
     }
@@ -188,7 +213,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     case 'text': {
       const text = (node.props.text as string) || ''
       if (isAnimated) {
-        return wrapHandles(<motion.p {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />, showHandles, node.id)
+        return wrapHandles(<motion.p key={playTick} {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />, showHandles, node.id)
       }
       return wrapHandles(<p {...commonProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />, showHandles, node.id)
     }
@@ -196,7 +221,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     case 'button': {
       const text = (node.props.text as string) || ''
       if (isAnimated) {
-        return wrapHandles(<motion.button {...commonProps} {...motionProps}>{text}</motion.button>, showHandles, node.id)
+        return wrapHandles(<motion.button key={playTick} {...commonProps} {...motionProps}>{text}</motion.button>, showHandles, node.id)
       }
       return wrapHandles(<button {...commonProps}>{text}</button>, showHandles, node.id)
     }
@@ -205,7 +230,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const src = (node.props.src as string) || ''
       const alt = (node.props.alt as string) || ''
       if (isAnimated) {
-        return wrapHandles(<motion.img {...commonProps} src={src} alt={alt} draggable={false} {...motionProps} />, showHandles, node.id)
+        return wrapHandles(<motion.img key={playTick} {...commonProps} src={src} alt={alt} draggable={false} {...motionProps} />, showHandles, node.id)
       }
       return wrapHandles(<img {...commonProps} src={src} alt={alt} draggable={false} />, showHandles, node.id)
     }
@@ -219,6 +244,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       if (isAnimated) {
         return wrapHandles(
           <motion.video
+            key={playTick}
             {...commonProps}
             src={src}
             autoPlay={autoplay}
@@ -249,20 +275,20 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 
     case 'divider':
       if (isAnimated) {
-        return wrapHandles(<motion.div {...commonProps} {...motionProps} />, showHandles, node.id)
+        return wrapHandles(<motion.div key={playTick} {...commonProps} {...motionProps} />, showHandles, node.id)
       }
       return wrapHandles(<div {...commonProps} />, showHandles, node.id)
 
     case 'spacer':
       if (isAnimated) {
-        return wrapHandles(<motion.div {...commonProps} {...motionProps} />, showHandles, node.id)
+        return wrapHandles(<motion.div key={playTick} {...commonProps} {...motionProps} />, showHandles, node.id)
       }
       return wrapHandles(<div {...commonProps} />, showHandles, node.id)
 
     case 'raw': {
       const html = (node.props.html as string) || ''
       if (isAnimated) {
-        return wrapHandles(<motion.div {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />, showHandles, node.id)
+        return wrapHandles(<motion.div key={playTick} {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />, showHandles, node.id)
       }
       return wrapHandles(<div {...commonProps} dangerouslySetInnerHTML={{ __html: html }} />, showHandles, node.id)
     }
@@ -283,7 +309,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 
     default:
       if (isAnimated) {
-        return wrapHandles(<motion.div {...commonProps} {...motionProps}>Unknown: {node.type}</motion.div>, showHandles, node.id)
+        return wrapHandles(<motion.div key={playTick} {...commonProps} {...motionProps}>Unknown: {node.type}</motion.div>, showHandles, node.id)
       }
       return wrapHandles(<div {...commonProps}>Unknown: {node.type}</div>, showHandles, node.id)
   }

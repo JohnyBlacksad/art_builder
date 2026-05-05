@@ -1,6 +1,6 @@
 import { useStore } from '../core/store'
 import { componentRegistry } from '../core/registry'
-import { Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import { Trash2, ArrowUp, ArrowDown, Play } from 'lucide-react'
 
 interface ControlRowProps {
   label: string
@@ -471,7 +471,19 @@ export default function PropertiesPanel() {
 
         {/* Animation */}
         <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Animation</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Animation</h3>
+            {anim?.type && anim.type !== 'none' && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('artbuilder:play-animation', { detail: node.id }))}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-medium transition-colors"
+                title="Play animation"
+              >
+                <Play className="w-3 h-3" />
+                Play
+              </button>
+            )}
+          </div>
           <ControlRow label="Type">
             <StyleSelect
               value={anim?.type || 'none'}
