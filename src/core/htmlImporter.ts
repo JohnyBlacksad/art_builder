@@ -69,6 +69,13 @@ function sizeValue(n: string): string {
   return `${num * 0.25}rem`
 }
 
+function parseCustomColor(colorName: string): string {
+  if (colorName.startsWith('[') && colorName.endsWith(']')) {
+    return colorName.slice(1, -1)
+  }
+  return tailwindColors[colorName] || colorName
+}
+
 function parseGradient(classes: string[]): string | null {
   const dirMap: Record<string, string> = {
     'bg-gradient-to-t': 'to top', 'bg-gradient-to-tr': 'to top right',
@@ -91,15 +98,15 @@ function parseGradient(classes: string[]): string | null {
     if (dirMap[c]) direction = dirMap[c]
     if (c.startsWith('from-')) {
       const colorName = c.slice(5)
-      fromColor = tailwindColors[colorName] || colorName
+      fromColor = parseCustomColor(colorName)
     }
     if (c.startsWith('via-')) {
       const colorName = c.slice(4)
-      viaColor = tailwindColors[colorName] || colorName
+      viaColor = parseCustomColor(colorName)
     }
     if (c.startsWith('to-') && !c.startsWith('to-top') && !c.startsWith('to-bottom') && !c.startsWith('to-left') && !c.startsWith('to-right') && !dirMap[c]) {
       const colorName = c.slice(3)
-      toColor = tailwindColors[colorName] || colorName
+      toColor = parseCustomColor(colorName)
     }
   }
 
@@ -200,6 +207,8 @@ function parseTailwindClasses(className: string): Record<string, string> {
       else if (v === 'px') style.width = '1px'
       else style.width = sizeValue(v)
     }
+    const wCustomMatch = c.match(/^w-\[(.+)]$/)
+    if (wCustomMatch) style.width = wCustomMatch[1]
     const hMatch = c.match(/^h-(\d+\.?\d*|px|full|screen|auto)$/)
     if (hMatch) {
       const v = hMatch[1]
@@ -209,6 +218,8 @@ function parseTailwindClasses(className: string): Record<string, string> {
       else if (v === 'px') style.height = '1px'
       else style.height = sizeValue(v)
     }
+    const hCustomMatch = c.match(/^h-\[(.+)]$/)
+    if (hCustomMatch) style.height = hCustomMatch[1]
     const minWMatch = c.match(/^min-w-(\d+|full)$/)
     if (minWMatch) style.minWidth = minWMatch[1] === 'full' ? '100%' : sizeValue(minWMatch[1])
     const maxWMatch = c.match(/^max-w-(\d+|full|none)$/)
@@ -345,12 +356,20 @@ function parseTailwindClasses(className: string): Record<string, string> {
 
     const topMatch = c.match(/^top-(\d+)$/)
     if (topMatch) style.top = sizeValue(topMatch[1])
+    const topCustomMatch = c.match(/^top-\[(.+)]$/)
+    if (topCustomMatch) style.top = topCustomMatch[1]
     const rightMatch = c.match(/^right-(\d+)$/)
     if (rightMatch) style.right = sizeValue(rightMatch[1])
+    const rightCustomMatch = c.match(/^right-\[(.+)]$/)
+    if (rightCustomMatch) style.right = rightCustomMatch[1]
     const bottomMatch = c.match(/^bottom-(\d+)$/)
     if (bottomMatch) style.bottom = sizeValue(bottomMatch[1])
+    const bottomCustomMatch = c.match(/^bottom-\[(.+)]$/)
+    if (bottomCustomMatch) style.bottom = bottomCustomMatch[1]
     const leftMatch = c.match(/^left-(\d+)$/)
     if (leftMatch) style.left = sizeValue(leftMatch[1])
+    const leftCustomMatch = c.match(/^left-\[(.+)]$/)
+    if (leftCustomMatch) style.left = leftCustomMatch[1]
 
     // Blur
     const blurMap: Record<string, string> = { 'none': '0', 'sm': '4px', 'md': '12px', 'lg': '16px', 'xl': '24px', '2xl': '40px', '3xl': '64px' }
@@ -397,6 +416,23 @@ function parseTailwindClasses(className: string): Record<string, string> {
 
     // Transform GPU
     if (c === 'transform-gpu') style.transform = 'translate3d(0, 0, 0)'
+
+    // Text balance
+    if (c === 'text-balance') style.textWrap = 'balance'
+
+    // Custom translate
+    const translateXMatch = c.match(/^-?translate-x-\[(.+)]$/)
+    if (translateXMatch) {
+      const val = translateXMatch[1]
+      const sign = c.startsWith('-translate-x-') ? '-' : ''
+      style.transform = `translateX(${sign}${val})`
+    }
+    const translateYMatch = c.match(/^-?translate-y-\[(.+)]$/)
+    if (translateYMatch) {
+      const val = translateYMatch[1]
+      const sign = c.startsWith('-translate-y-') ? '-' : ''
+      style.transform = `translateY(${sign}${val})`
+    }
   }
 
   return style
@@ -438,8 +474,12 @@ function elementToNode(el: Element): ComponentNode | null {
   const inlineStyle = el.getAttribute('style')
   if (inlineStyle) {
     inlineStyle.split(';').forEach(rule => {
-      const [k, v] = rule.split(':').map(s => s.trim())
-      if (k && v) style[k] = v
+      const colonIdx = rule.indexOf(':')
+      if (colonIdx > 0) {
+        const k = rule.slice(0, colonIdx).trim()
+        const v = rule.slice(colonIdx + 1).trim()
+        if (k && v) style[k] = v
+      }
     })
   }
 
@@ -462,6 +502,13 @@ function elementToNode(el: Element): ComponentNode | null {
 
   // Headings
   if (tag.match(/^h[1-6]$/)) {
+    if (el.children.length > 0) {
+      // Heading with nested elements (e.g., gradient spans) -> preserve as raw HTML
+      return createNode('raw', {
+        html: el.outerHTML,
+        style,
+      })
+    }
     return createNode('heading', {
       text: extractText(el),
       level: tag,
