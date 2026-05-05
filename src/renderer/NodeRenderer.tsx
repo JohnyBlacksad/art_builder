@@ -117,7 +117,6 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const showHandles = !preview && isSelected && node.id !== 'root'
 
   const baseClass = cn(
-    'transition-all',
     showHandles && 'relative',
     !preview && isSelected && 'ring-2 ring-blue-500 ring-offset-1',
     node.id === 'root' && 'min-h-full',
