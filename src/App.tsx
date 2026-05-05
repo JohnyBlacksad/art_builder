@@ -1,14 +1,17 @@
 import { useState } from 'react'
-import { DndContext, type DragEndEvent, type DragOverEvent, type DragStartEvent, DragOverlay, pointerWithin } from '@dnd-kit/core'
+import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { useStore } from './core/store'
 import { componentRegistry } from './core/registry'
 import { presetRegistry } from './core/presets'
 import { getCustomPreset } from './core/customComponents'
+import { PreviewContext } from './core/previewContext'
 import type { ComponentType } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
 import PropertiesPanel from './components/PropertiesPanel'
 import Canvas from './components/Canvas'
 import Toolbar from './components/Toolbar'
+
+const isPreview = new URLSearchParams(window.location.search).has('preview')
 
 export default function App() {
   const addNode = useStore((s) => s.addNode)
@@ -55,27 +58,39 @@ export default function App() {
     }
   }
 
-  return (
-    <DndContext
-      collisionDetection={pointerWithin}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="h-screen flex flex-col bg-slate-950">
-        <Toolbar />
-        <div className="flex-1 flex overflow-hidden">
-          <ComponentPanel />
+  if (isPreview) {
+    return (
+      <PreviewContext.Provider value={true}>
+        <div className="h-screen bg-white overflow-auto">
           <Canvas />
-          <PropertiesPanel />
         </div>
-      </div>
-      <DragOverlay dropAnimation={null}>
-        {dragLabel ? (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-xl pointer-events-none opacity-90">
-            <span>{dragLabel}</span>
+      </PreviewContext.Provider>
+    )
+  }
+
+  return (
+    <PreviewContext.Provider value={false}>
+      <DndContext
+        collisionDetection={pointerWithin}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="h-screen flex flex-col bg-slate-950">
+          <Toolbar />
+          <div className="flex-1 flex overflow-hidden">
+            <ComponentPanel />
+            <Canvas />
+            <PropertiesPanel />
           </div>
-        ) : null}
-      </DragOverlay>
-    </DndContext>
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {dragLabel ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white text-sm shadow-xl pointer-events-none opacity-90">
+              <span>{dragLabel}</span>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
+    </PreviewContext.Provider>
   )
 }

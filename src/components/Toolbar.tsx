@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { exportToHTML } from '../core/exporter'
 import { saveCustomComponent } from '../core/customComponents'
 import HtmlImportModal from './HtmlImportModal'
-import { ZoomIn, ZoomOut, Monitor, Smartphone, Download, Undo2, Redo2, Save, FileCode } from 'lucide-react'
+import { ZoomIn, ZoomOut, Monitor, Smartphone, Download, Undo2, Redo2, Save, FileCode, Eye } from 'lucide-react'
 
 export default function Toolbar() {
   const [showImport, setShowImport] = useState(false)
@@ -101,6 +101,14 @@ export default function Toolbar() {
         </button>
 
         <div className="w-px h-4 bg-slate-700 mx-1" />
+
+        <button
+          onClick={() => window.open(`${window.location.pathname}?preview=1`, '_blank')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium transition-colors"
+        >
+          <Eye className="w-3.5 h-3.5" />
+          Preview
+        </button>
 
         <button
           onClick={() => setShowImport(true)}

@@ -1,9 +1,11 @@
 import { useDroppable } from '@dnd-kit/core'
 import { motion, type Transition } from 'framer-motion'
 import ParticlesCanvas from '../components/ParticlesCanvas'
-import type { ComponentNode, AnimationConfig } from '../core/types'
+import ResizeHandles from '../components/ResizeHandles'
 import { useStore } from '../core/store'
+import { usePreview } from '../core/previewContext'
 import { cn } from '../lib/utils'
+import type { ComponentNode, AnimationConfig } from '../core/types'
 
 interface NodeRendererProps {
   node: ComponentNode
@@ -78,7 +80,18 @@ function getAnimationProps(animation: AnimationConfig | undefined, isContainer: 
   return null
 }
 
+function wrapHandles(el: React.ReactNode, show: boolean, nodeId: string) {
+  if (!show) return el
+  return (
+    <>
+      {el}
+      <ResizeHandles nodeId={nodeId} />
+    </>
+  )
+}
+
 export default function NodeRenderer({ node }: NodeRendererProps) {
+  const preview = usePreview()
   const selectedId = useStore((s) => s.selectedId)
   const selectNode = useStore((s) => s.selectNode)
   const isSelected = selectedId === node.id
@@ -88,10 +101,11 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `drop-${node.id}`,
     data: { type: 'CONTAINER', nodeId: node.id },
-    disabled: !isContainer,
+    disabled: !isContainer || preview,
   })
 
   const handleClick = (e: React.MouseEvent) => {
+    if (preview) return
     e.stopPropagation()
     selectNode(node.id)
   }
@@ -100,11 +114,14 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const motionProps = getAnimationProps(anim, isContainer)
   const isAnimated = motionProps !== null
 
+  const showHandles = !preview && isSelected && node.id !== 'root'
+
   const baseClass = cn(
-    'relative transition-all',
-    isSelected && 'ring-2 ring-blue-500 ring-offset-1',
+    'transition-all',
+    showHandles && 'relative',
+    !preview && isSelected && 'ring-2 ring-blue-500 ring-offset-1',
     node.id === 'root' && 'min-h-full',
-    isOver && isContainer && 'ring-2 ring-green-400 ring-offset-2 bg-green-50/10'
+    !preview && isOver && isContainer && 'ring-2 ring-green-400 ring-offset-2 bg-green-50/10'
   )
 
   const baseStyle = (node.props.style as React.CSSProperties) || {}
@@ -112,7 +129,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   if (isContainer) {
     const children = (
       <>
-        {node.children.length === 0 && (
+        {node.children.length === 0 && !preview && (
           <div className="text-xs text-slate-400 text-center py-6 pointer-events-none select-none opacity-60">
             Drop here
           </div>
@@ -124,7 +141,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     )
 
     if (isAnimated) {
-      return (
+      return wrapHandles(
         <motion.div
           ref={setNodeRef}
           className={baseClass}
@@ -134,11 +151,13 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           {...motionProps}
         >
           {children}
-        </motion.div>
+        </motion.div>,
+        showHandles,
+        node.id
       )
     }
 
-    return (
+    return wrapHandles(
       <div
         ref={setNodeRef}
         className={baseClass}
@@ -147,11 +166,13 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         data-node-id={node.id}
       >
         {children}
-      </div>
+      </div>,
+      showHandles,
+      node.id
     )
   }
 
-  const commonProps = {
+  const commonProps: React.HTMLAttributes<HTMLElement> = {
     className: baseClass,
     style: baseStyle,
     onClick: handleClick,
@@ -165,34 +186,34 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const Tag = level as keyof JSX.IntrinsicElements
       if (isAnimated) {
         const MotionTag = motion[Tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6']
-        return <MotionTag {...commonProps} {...motionProps}>{text}</MotionTag>
+        return wrapHandles(<MotionTag {...commonProps} {...motionProps}>{text}</MotionTag>, showHandles, node.id)
       }
-      return <Tag {...commonProps}>{text}</Tag>
+      return wrapHandles(<Tag {...commonProps}>{text}</Tag>, showHandles, node.id)
     }
 
     case 'text': {
       const text = (node.props.text as string) || ''
       if (isAnimated) {
-        return <motion.p {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />
+        return wrapHandles(<motion.p {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />, showHandles, node.id)
       }
-      return <p {...commonProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />
+      return wrapHandles(<p {...commonProps} dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, '<br/>') }} />, showHandles, node.id)
     }
 
     case 'button': {
       const text = (node.props.text as string) || ''
       if (isAnimated) {
-        return <motion.button {...commonProps} {...motionProps}>{text}</motion.button>
+        return wrapHandles(<motion.button {...commonProps} {...motionProps}>{text}</motion.button>, showHandles, node.id)
       }
-      return <button {...commonProps}>{text}</button>
+      return wrapHandles(<button {...commonProps}>{text}</button>, showHandles, node.id)
     }
 
     case 'image': {
       const src = (node.props.src as string) || ''
       const alt = (node.props.alt as string) || ''
       if (isAnimated) {
-        return <motion.img {...commonProps} src={src} alt={alt} draggable={false} {...motionProps} />
+        return wrapHandles(<motion.img {...commonProps} src={src} alt={alt} draggable={false} {...motionProps} />, showHandles, node.id)
       }
-      return <img {...commonProps} src={src} alt={alt} draggable={false} />
+      return wrapHandles(<img {...commonProps} src={src} alt={alt} draggable={false} />, showHandles, node.id)
     }
 
     case 'video': {
@@ -202,7 +223,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const muted = !!node.props.muted
       const controls = !!node.props.controls
       if (isAnimated) {
-        return (
+        return wrapHandles(
           <motion.video
             {...commonProps}
             src={src}
@@ -212,10 +233,12 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
             controls={controls}
             playsInline
             {...motionProps}
-          />
+          />,
+          showHandles,
+          node.id
         )
       }
-      return (
+      return wrapHandles(
         <video
           {...commonProps}
           src={src}
@@ -224,28 +247,30 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           muted={muted}
           controls={controls}
           playsInline
-        />
+        />,
+        showHandles,
+        node.id
       )
     }
 
     case 'divider':
       if (isAnimated) {
-        return <motion.div {...commonProps} {...motionProps} />
+        return wrapHandles(<motion.div {...commonProps} {...motionProps} />, showHandles, node.id)
       }
-      return <div {...commonProps} />
+      return wrapHandles(<div {...commonProps} />, showHandles, node.id)
 
     case 'spacer':
       if (isAnimated) {
-        return <motion.div {...commonProps} {...motionProps} />
+        return wrapHandles(<motion.div {...commonProps} {...motionProps} />, showHandles, node.id)
       }
-      return <div {...commonProps} />
+      return wrapHandles(<div {...commonProps} />, showHandles, node.id)
 
     case 'raw': {
       const html = (node.props.html as string) || ''
       if (isAnimated) {
-        return <motion.div {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />
+        return wrapHandles(<motion.div {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />, showHandles, node.id)
       }
-      return <div {...commonProps} dangerouslySetInnerHTML={{ __html: html }} />
+      return wrapHandles(<div {...commonProps} dangerouslySetInnerHTML={{ __html: html }} />, showHandles, node.id)
     }
 
     case 'particles': {
@@ -253,17 +278,19 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const color = (node.props.color as string) || '#3b82f6'
       const pSpeed = (node.props.speed as number) || 0.5
       const pSize = (node.props.size as number) || 2
-      return (
+      return wrapHandles(
         <div {...commonProps}>
           <ParticlesCanvas count={count} color={color} speed={pSpeed} size={pSize} style={baseStyle} />
-        </div>
+        </div>,
+        showHandles,
+        node.id
       )
     }
 
     default:
       if (isAnimated) {
-        return <motion.div {...commonProps} {...motionProps}>Unknown: {node.type}</motion.div>
+        return wrapHandles(<motion.div {...commonProps} {...motionProps}>Unknown: {node.type}</motion.div>, showHandles, node.id)
       }
-      return <div {...commonProps}>Unknown: {node.type}</div>
+      return wrapHandles(<div {...commonProps}>Unknown: {node.type}</div>, showHandles, node.id)
   }
 }
