@@ -117,6 +117,43 @@ export const componentRegistry: Record<ComponentType, ComponentMeta> = {
       },
     },
   },
+  video: {
+    type: 'video',
+    label: 'Video',
+    icon: 'Video',
+    category: 'media',
+    defaultProps: {
+      src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+      autoplay: true,
+      loop: true,
+      muted: true,
+      controls: false,
+      style: {
+        width: '100%',
+        maxWidth: '640px',
+        borderRadius: '8px',
+        objectFit: 'cover',
+      },
+    },
+  },
+  particles: {
+    type: 'particles',
+    label: 'Particles',
+    icon: 'Atom',
+    category: 'media',
+    defaultProps: {
+      count: 80,
+      color: '#3b82f6',
+      speed: 0.5,
+      size: 2,
+      style: {
+        width: '100%',
+        height: '300px',
+        backgroundColor: '#0f172a',
+        borderRadius: '12px',
+      },
+    },
+  },
   divider: {
     type: 'divider',
     label: 'Divider',

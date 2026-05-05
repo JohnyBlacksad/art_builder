@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { motion, type Transition } from 'framer-motion'
+import ParticlesCanvas from '../components/ParticlesCanvas'
 import type { ComponentNode, AnimationConfig } from '../core/types'
 import { useStore } from '../core/store'
 import { cn } from '../lib/utils'
@@ -194,6 +195,39 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       return <img {...commonProps} src={src} alt={alt} draggable={false} />
     }
 
+    case 'video': {
+      const src = (node.props.src as string) || ''
+      const autoplay = !!node.props.autoplay
+      const loop = !!node.props.loop
+      const muted = !!node.props.muted
+      const controls = !!node.props.controls
+      if (isAnimated) {
+        return (
+          <motion.video
+            {...commonProps}
+            src={src}
+            autoPlay={autoplay}
+            loop={loop}
+            muted={muted}
+            controls={controls}
+            playsInline
+            {...motionProps}
+          />
+        )
+      }
+      return (
+        <video
+          {...commonProps}
+          src={src}
+          autoPlay={autoplay}
+          loop={loop}
+          muted={muted}
+          controls={controls}
+          playsInline
+        />
+      )
+    }
+
     case 'divider':
       if (isAnimated) {
         return <motion.div {...commonProps} {...motionProps} />
@@ -212,6 +246,18 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         return <motion.div {...commonProps} {...motionProps} dangerouslySetInnerHTML={{ __html: html }} />
       }
       return <div {...commonProps} dangerouslySetInnerHTML={{ __html: html }} />
+    }
+
+    case 'particles': {
+      const count = (node.props.count as number) || 80
+      const color = (node.props.color as string) || '#3b82f6'
+      const pSpeed = (node.props.speed as number) || 0.5
+      const pSize = (node.props.size as number) || 2
+      return (
+        <div {...commonProps}>
+          <ParticlesCanvas count={count} color={color} speed={pSpeed} size={pSize} style={baseStyle} />
+        </div>
+      )
     }
 
     default:

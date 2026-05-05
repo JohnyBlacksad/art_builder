@@ -4,6 +4,8 @@ export type ComponentType =
   | 'text'
   | 'button'
   | 'image'
+  | 'video'
+  | 'particles'
   | 'divider'
   | 'spacer'
   | 'flex'

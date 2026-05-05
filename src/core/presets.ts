@@ -861,4 +861,182 @@ export const presetRegistry: Record<string, PresetMeta> = {
       ]),
     ],
   },
+
+  videoHero: {
+    id: 'videoHero',
+    label: 'Video Hero',
+    icon: 'Clapperboard',
+    category: 'Sections',
+    build: () => [
+      createNode('container', {
+        style: {
+          position: 'relative',
+          minHeight: '600px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        },
+      }, [
+        createNode('video', {
+          src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+          autoplay: true,
+          loop: true,
+          muted: true,
+          controls: false,
+          style: {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: '0',
+          },
+        }),
+        createNode('container', {
+          style: {
+            position: 'relative',
+            zIndex: '10',
+            textAlign: 'center',
+            padding: '48px',
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(8px)',
+            border: 'none',
+          },
+        }, [
+          createNode('heading', {
+            text: 'Cinematic Experience',
+            level: 'h1',
+            style: {
+              fontSize: '56px',
+              fontWeight: '800',
+              color: '#ffffff',
+              marginBottom: '16px',
+              textShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            },
+          }),
+          createNode('text', {
+            text: 'Bring your vision to life with motion and sound',
+            style: {
+              fontSize: '20px',
+              color: 'rgba(255,255,255,0.9)',
+              marginBottom: '32px',
+            },
+          }),
+          createNode('button', {
+            text: 'Watch Showreel',
+            style: {
+              padding: '14px 32px',
+              backgroundColor: '#ffffff',
+              color: '#0f172a',
+              borderRadius: '8px',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            },
+          }),
+        ]),
+      ]),
+    ],
+  },
+
+  colorProduct: {
+    id: 'colorProduct',
+    label: 'Color Product',
+    icon: 'Palette',
+    category: 'UI',
+    build: () => [
+      createNode('container', {
+        style: {
+          padding: '32px',
+          backgroundColor: '#ffffff',
+          borderRadius: '16px',
+          border: '1px solid #e2e8f0',
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            position: 'relative',
+            padding: '0',
+            background: '#f8fafc',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            marginBottom: '20px',
+            border: 'none',
+          },
+        }, [
+          createNode('image', {
+            src: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&auto=format&fit=crop',
+            alt: 'Product',
+            style: {
+              width: '100%',
+              height: '320px',
+              objectFit: 'cover',
+            },
+          }),
+          createNode('container', {
+            style: {
+              position: 'absolute',
+              bottom: '16px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex',
+              gap: '12px',
+              padding: '8px 16px',
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              borderRadius: '32px',
+              border: 'none',
+              backdropFilter: 'blur(4px)',
+            },
+          }, [
+            ...['#ef4444', '#3b82f6', '#10b981', '#f59e0b'].map((color) =>
+              createNode('container', {
+                style: {
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: color,
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  cursor: 'pointer',
+                  padding: '0',
+                },
+              })
+            ),
+          ]),
+        ]),
+        createNode('heading', {
+          text: 'Premium Cotton Tee',
+          level: 'h3',
+          style: { fontSize: '20px', fontWeight: '600', color: '#0f172a', marginBottom: '4px' },
+        }),
+        createNode('text', {
+          text: '$49.00',
+          style: { fontSize: '24px', fontWeight: '700', color: '#3b82f6', marginBottom: '8px' },
+        }),
+        createNode('text', {
+          text: 'Choose your color above. Premium quality organic cotton.',
+          style: { fontSize: '14px', color: '#64748b', lineHeight: '1.5', marginBottom: '16px' },
+        }),
+        createNode('button', {
+          text: 'Add to Cart',
+          style: {
+            width: '100%',
+            padding: '12px',
+            backgroundColor: '#0f172a',
+            color: '#ffffff',
+            borderRadius: '8px',
+            border: 'none',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          },
+        }),
+      ]),
+    ],
+  },
 }
