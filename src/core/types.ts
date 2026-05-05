@@ -21,11 +21,20 @@ export interface AnimationConfig {
   stagger: number
 }
 
+export interface InteractiveConfig {
+  hoverScale: number
+  hoverBrightness: number
+  pressScale: number
+  focusRing: boolean
+  focusRingColor: string
+}
+
 export interface BaseProps {
   id?: string
   className?: string
   style?: React.CSSProperties
   animation?: AnimationConfig
+  interactive?: InteractiveConfig
 }
 
 export interface ComponentNode {

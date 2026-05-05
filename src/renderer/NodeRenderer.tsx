@@ -6,7 +6,7 @@ import ResizeHandles from '../components/ResizeHandles'
 import { useStore } from '../core/store'
 import { usePreview } from '../core/previewContext'
 import { cn } from '../lib/utils'
-import type { ComponentNode, AnimationConfig } from '../core/types'
+import type { ComponentNode, AnimationConfig, InteractiveConfig } from '../core/types'
 
 interface NodeRendererProps {
   node: ComponentNode
@@ -102,6 +102,23 @@ function wrapHandles(el: React.ReactNode, show: boolean, nodeId: string) {
   )
 }
 
+function getInteractiveMotionProps(node: ComponentNode) {
+  const interactive = node.props.interactive as InteractiveConfig | undefined
+  if (!interactive) return null
+  const hover: Record<string, any> = {}
+  if (interactive.hoverScale !== 1) hover.scale = interactive.hoverScale
+  if (interactive.hoverBrightness !== 1) hover.filter = `brightness(${interactive.hoverBrightness})`
+
+  const tap: Record<string, any> = {}
+  if (interactive.pressScale !== 1) tap.scale = interactive.pressScale
+
+  const props: Record<string, any> = {}
+  if (Object.keys(hover).length > 0) props.whileHover = hover
+  if (Object.keys(tap).length > 0) props.whileTap = tap
+
+  return Object.keys(props).length > 0 ? props : null
+}
+
 export default function NodeRenderer({ node }: NodeRendererProps) {
   const preview = usePreview()
   const selectedId = useStore((s) => s.selectedId)
@@ -159,6 +176,8 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       </>
     )
 
+    const interactiveProps = getInteractiveMotionProps(node)
+
     // Interactive radio button in preview
     if (preview && node.props.isRadio && !isAnimated) {
       return (
@@ -174,6 +193,22 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
             boxShadow: radioSelected ? '0 0 0 2px #c7d2fe' : 'none',
           }}
           data-node-id={node.id}
+        >
+          {children}
+        </motion.div>
+      )
+    }
+
+    // Interactive container in preview
+    if (preview && interactiveProps && !isAnimated) {
+      return (
+        <motion.div
+          ref={preview ? undefined : setNodeRef}
+          className={baseClass}
+          style={baseStyle}
+          onClick={handleClick}
+          data-node-id={node.id}
+          {...interactiveProps}
         >
           {children}
         </motion.div>
@@ -246,14 +281,13 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         return wrapHandles(<motion.button key={playTick} {...commonProps} {...motionProps}>{text}</motion.button>, showHandles, node.id)
       }
       // Interactive button in preview
-      if (preview) {
+      if (preview && interactiveProps) {
         return (
           <motion.button
-            whileHover={{ scale: 1.02, filter: 'brightness(1.1)' }}
-            whileTap={{ scale: 0.97 }}
             className={baseClass}
             style={baseStyle}
             data-node-id={node.id}
+            {...interactiveProps}
           >
             {text}
           </motion.button>

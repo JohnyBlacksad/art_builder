@@ -99,6 +99,11 @@ export default function PropertiesPanel() {
   const meta = componentRegistry[node.type]
   const style = (node.props.style as Record<string, string>) || {}
   const anim = (node.props.animation as Record<string, any>) || { type: 'none' }
+  const interactive = (node.props.interactive as Record<string, any>) || {
+    hoverScale: 1.02,
+    hoverBrightness: 1.1,
+    pressScale: 0.97,
+  }
 
   const setStyle = (key: string, value: string) => {
     updateProps(node.id, {
@@ -109,6 +114,12 @@ export default function PropertiesPanel() {
   const setAnim = (partial: Record<string, any>) => {
     updateProps(node.id, {
       animation: { ...anim, ...partial },
+    })
+  }
+
+  const setInteractive = (partial: Record<string, any>) => {
+    updateProps(node.id, {
+      interactive: { ...interactive, ...partial },
     })
   }
 
@@ -553,6 +564,53 @@ export default function PropertiesPanel() {
               )}
             </>
           )}
+        </div>
+
+        {/* Interactive States */}
+        <div className="space-y-3">
+          <h3 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Interactive States</h3>
+          <ControlRow label="Hover Scale">
+            <div className="flex items-center gap-1 flex-1">
+              <input
+                type="range"
+                min="0.8"
+                max="1.2"
+                step="0.05"
+                value={interactive?.hoverScale ?? 1.02}
+                onChange={(e) => setInteractive({ hoverScale: parseFloat(e.target.value) })}
+                className="flex-1 accent-emerald-500"
+              />
+              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.hoverScale ?? 1.02}x</span>
+            </div>
+          </ControlRow>
+          <ControlRow label="Hover Brightness">
+            <div className="flex items-center gap-1 flex-1">
+              <input
+                type="range"
+                min="0.5"
+                max="1.5"
+                step="0.1"
+                value={interactive?.hoverBrightness ?? 1.1}
+                onChange={(e) => setInteractive({ hoverBrightness: parseFloat(e.target.value) })}
+                className="flex-1 accent-emerald-500"
+              />
+              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.hoverBrightness ?? 1.1}</span>
+            </div>
+          </ControlRow>
+          <ControlRow label="Press Scale">
+            <div className="flex items-center gap-1 flex-1">
+              <input
+                type="range"
+                min="0.8"
+                max="1.0"
+                step="0.05"
+                value={interactive?.pressScale ?? 0.97}
+                onChange={(e) => setInteractive({ pressScale: parseFloat(e.target.value) })}
+                className="flex-1 accent-emerald-500"
+              />
+              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.pressScale ?? 0.97}x</span>
+            </div>
+          </ControlRow>
         </div>
       </div>
     </div>
