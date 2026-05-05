@@ -137,7 +137,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     if (isAnimated) {
       return wrapHandles(
         <motion.div
-          ref={setNodeRef}
+          ref={preview ? undefined : setNodeRef}
           className={baseClass}
           style={baseStyle}
           onClick={handleClick}
@@ -153,7 +153,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 
     return wrapHandles(
       <div
-        ref={setNodeRef}
+        ref={preview ? undefined : setNodeRef}
         className={baseClass}
         style={baseStyle}
         onClick={handleClick}

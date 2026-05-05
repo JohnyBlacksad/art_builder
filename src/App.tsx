@@ -20,6 +20,7 @@ export default function App() {
   const setRoot = useStore((s) => s.setRoot)
   const [dragType, setDragType] = useState<ComponentType | null>(null)
   const [dragLabel, setDragLabel] = useState<string>('')
+  const [previewReady, setPreviewReady] = useState(false)
 
   useEffect(() => {
     if (isPreview) {
@@ -32,6 +33,7 @@ export default function App() {
           // ignore parse error
         }
       }
+      setPreviewReady(true)
     }
   }, [setRoot])
 
@@ -78,7 +80,7 @@ export default function App() {
       <PreviewContext.Provider value={true}>
         <DndContext collisionDetection={pointerWithin}>
           <div className="h-screen bg-white overflow-auto">
-            <Canvas />
+            <Canvas key={previewReady ? 'ready' : 'loading'} />
           </div>
         </DndContext>
       </PreviewContext.Provider>
