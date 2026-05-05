@@ -11,6 +11,13 @@ export type ComponentType =
   | 'flex'
   | 'grid'
   | 'raw'
+  | 'accordion'
+  | 'dialog'
+  | 'tabs'
+  | 'select'
+  | 'tooltip'
+  | 'slider'
+  | 'switch'
 
 export interface AnimationConfig {
   type: 'none' | 'fade-in' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'scale' | 'rotate' | 'flip'

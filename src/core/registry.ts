@@ -188,6 +188,91 @@ export const componentRegistry: Record<ComponentType, ComponentMeta> = {
       html: '',
     },
   },
+  accordion: {
+    type: 'accordion',
+    label: 'Accordion',
+    icon: 'ListCollapse',
+    category: 'basic',
+    defaultProps: {
+      items: [
+        { title: 'Section 1', content: 'Content for section 1' },
+        { title: 'Section 2', content: 'Content for section 2' },
+      ],
+      style: { width: '100%', maxWidth: '400px' },
+    },
+  },
+  dialog: {
+    type: 'dialog',
+    label: 'Dialog',
+    icon: 'MessageSquare',
+    category: 'basic',
+    defaultProps: {
+      triggerText: 'Open Dialog',
+      title: 'Dialog Title',
+      content: 'This is a dialog content.',
+      style: {},
+    },
+  },
+  tabs: {
+    type: 'tabs',
+    label: 'Tabs',
+    icon: 'Tab',
+    category: 'basic',
+    defaultProps: {
+      tabs: [
+        { label: 'Tab 1', content: 'Content of tab 1' },
+        { label: 'Tab 2', content: 'Content of tab 2' },
+        { label: 'Tab 3', content: 'Content of tab 3' },
+      ],
+      style: { width: '100%', maxWidth: '400px' },
+    },
+  },
+  select: {
+    type: 'select',
+    label: 'Select',
+    icon: 'ChevronDown',
+    category: 'basic',
+    defaultProps: {
+      options: ['Option 1', 'Option 2', 'Option 3'],
+      placeholder: 'Choose...',
+      style: { width: '100%', maxWidth: '200px' },
+    },
+  },
+  tooltip: {
+    type: 'tooltip',
+    label: 'Tooltip',
+    icon: 'HelpCircle',
+    category: 'basic',
+    defaultProps: {
+      triggerText: 'Hover me',
+      content: 'This is a tooltip!',
+      style: {},
+    },
+  },
+  slider: {
+    type: 'slider',
+    label: 'Slider',
+    icon: 'SlidersHorizontal',
+    category: 'basic',
+    defaultProps: {
+      min: 0,
+      max: 100,
+      step: 1,
+      defaultValue: 50,
+      style: { width: '100%', maxWidth: '300px' },
+    },
+  },
+  switch: {
+    type: 'switch',
+    label: 'Switch',
+    icon: 'ToggleLeft',
+    category: 'basic',
+    defaultProps: {
+      label: 'Toggle me',
+      defaultChecked: false,
+      style: {},
+    },
+  },
 }
 
 export function getMeta(type: ComponentType): ComponentMeta {

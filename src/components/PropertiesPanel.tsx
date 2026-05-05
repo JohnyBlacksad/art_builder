@@ -480,6 +480,26 @@ export default function PropertiesPanel() {
           </div>
         )}
 
+        {/* Interactive Data */}
+        {['accordion', 'dialog', 'tabs', 'select', 'tooltip', 'slider', 'switch'].includes(node.type) && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-orange-400 uppercase tracking-wider">Data</h3>
+            <textarea
+              className="w-full h-32 bg-slate-800 text-slate-200 text-xs p-2 rounded border border-slate-700 font-mono resize-none focus:outline-none focus:border-orange-500"
+              defaultValue={JSON.stringify(node.props, null, 2)}
+              onBlur={(e) => {
+                try {
+                  const parsed = JSON.parse(e.target.value)
+                  updateProps(node.id, parsed)
+                } catch {
+                  // ignore invalid json
+                }
+              }}
+            />
+            <p className="text-[10px] text-slate-500">Edit as JSON. Be careful with syntax.</p>
+          </div>
+        )}
+
         {/* Animation */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
