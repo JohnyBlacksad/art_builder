@@ -120,6 +120,7 @@ interface Store extends EditorState {
   moveUp: (nodeId: string) => void
   moveDown: (nodeId: string) => void
   setZoom: (zoom: number) => void
+  setRoot: (root: ComponentNode) => void
   undo: () => void
   redo: () => void
 }
@@ -214,6 +215,16 @@ export const useStore = create<Store>()(
     setZoom: (zoom) =>
       set((state) => {
         state.zoom = Math.max(0.25, Math.min(2, zoom))
+      }),
+
+    setRoot: (root) =>
+      set((state) => {
+        state.root = JSON.parse(JSON.stringify(root))
+        state.history = [{ root: JSON.parse(JSON.stringify(root)), selectedId: null }]
+        state.historyIndex = 0
+        state.canUndo = false
+        state.canRedo = false
+        state.selectedId = null
       }),
 
     undo: () =>

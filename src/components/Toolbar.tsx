@@ -103,7 +103,10 @@ export default function Toolbar() {
         <div className="w-px h-4 bg-slate-700 mx-1" />
 
         <button
-          onClick={() => window.open(`${window.location.pathname}?preview=1`, '_blank')}
+          onClick={() => {
+            localStorage.setItem('artbuilder:preview', JSON.stringify(root))
+            window.open(`${window.location.pathname}?preview=1`, '_blank')
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium transition-colors"
         >
           <Eye className="w-3.5 h-3.5" />

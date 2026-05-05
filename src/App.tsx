@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, pointerWithin } from '@dnd-kit/core'
 import { useStore } from './core/store'
 import { componentRegistry } from './core/registry'
 import { presetRegistry } from './core/presets'
 import { getCustomPreset } from './core/customComponents'
 import { PreviewContext } from './core/previewContext'
-import type { ComponentType } from './core/types'
+import type { ComponentType, ComponentNode } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
 import PropertiesPanel from './components/PropertiesPanel'
 import Canvas from './components/Canvas'
@@ -17,8 +17,23 @@ export default function App() {
   const addNode = useStore((s) => s.addNode)
   const addNodes = useStore((s) => s.addNodes)
   const moveNode = useStore((s) => s.moveNode)
+  const setRoot = useStore((s) => s.setRoot)
   const [dragType, setDragType] = useState<ComponentType | null>(null)
   const [dragLabel, setDragLabel] = useState<string>('')
+
+  useEffect(() => {
+    if (isPreview) {
+      const saved = localStorage.getItem('artbuilder:preview')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved) as ComponentNode
+          setRoot(parsed)
+        } catch {
+          // ignore parse error
+        }
+      }
+    }
+  }, [setRoot])
 
   const handleDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current
@@ -61,9 +76,11 @@ export default function App() {
   if (isPreview) {
     return (
       <PreviewContext.Provider value={true}>
-        <div className="h-screen bg-white overflow-auto">
-          <Canvas />
-        </div>
+        <DndContext collisionDetection={pointerWithin}>
+          <div className="h-screen bg-white overflow-auto">
+            <Canvas />
+          </div>
+        </DndContext>
       </PreviewContext.Provider>
     )
   }

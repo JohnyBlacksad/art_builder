@@ -129,11 +129,6 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   if (isContainer) {
     const children = (
       <>
-        {node.children.length === 0 && !preview && (
-          <div className="text-xs text-slate-400 text-center py-6 pointer-events-none select-none opacity-60">
-            Drop here
-          </div>
-        )}
         {node.children.map((child) => (
           <NodeRenderer key={child.id} node={child} />
         ))}
