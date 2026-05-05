@@ -1039,4 +1039,137 @@ export const presetRegistry: Record<string, PresetMeta> = {
       ]),
     ],
   },
+
+  glassCard: {
+    id: 'glassCard',
+    label: 'Glassmorphism Card',
+    icon: 'Diamond',
+    category: 'UI',
+    build: () => [
+      createNode('container', {
+        style: {
+          padding: '32px',
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          borderRadius: '20px',
+          border: '1px solid rgba(255,255,255,0.2)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          maxWidth: '360px',
+        },
+      }, [
+        createNode('heading', {
+          text: 'Glass Card',
+          level: 'h3',
+          style: { fontSize: '24px', fontWeight: '700', color: '#ffffff', marginBottom: '12px' },
+        }),
+        createNode('text', {
+          text: 'Beautiful glassmorphism effect with backdrop blur and subtle borders.',
+          style: { fontSize: '14px', color: 'rgba(255,255,255,0.8)', lineHeight: '1.6', marginBottom: '20px' },
+        }),
+        createNode('button', {
+          text: 'Explore',
+          style: {
+            padding: '10px 24px',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            color: '#ffffff',
+            borderRadius: '10px',
+            border: '1px solid rgba(255,255,255,0.3)',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  gradientButton: {
+    id: 'gradientButton',
+    label: 'Gradient Button',
+    icon: 'Zap',
+    category: 'UI',
+    build: () => [
+      createNode('button', {
+        text: 'Get Started',
+        style: {
+          padding: '14px 36px',
+          backgroundImage: 'linear-gradient(to right, #4f46e5, #9333ea)',
+          color: '#ffffff',
+          borderRadius: '12px',
+          border: 'none',
+          fontSize: '16px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(79,70,229,0.4)',
+        },
+      }),
+    ],
+  },
+
+  gradientHero: {
+    id: 'gradientHero',
+    label: 'Gradient Hero',
+    icon: 'Sunrise',
+    category: 'Sections',
+    build: () => [
+      createNode('container', {
+        style: {
+          padding: '100px 48px',
+          backgroundImage: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #be185d 100%)',
+          textAlign: 'center',
+        },
+      }, [
+        createNode('heading', {
+          text: 'Digital Future',
+          level: 'h1',
+          style: {
+            fontSize: '56px',
+            fontWeight: '800',
+            color: '#ffffff',
+            marginBottom: '20px',
+            backgroundImage: 'linear-gradient(to right, #818cf8, #c084fc, #f472b6)',
+            backgroundClip: 'text',
+            color: 'transparent',
+          },
+        }),
+        createNode('text', {
+          text: 'Create stunning experiences with modern design tools.',
+          style: { fontSize: '20px', color: 'rgba(255,255,255,0.8)', marginBottom: '36px', maxWidth: '600px', margin: '0 auto 36px' },
+        }),
+        createNode('button', {
+          text: 'Start Building',
+          style: {
+            padding: '14px 36px',
+            backgroundColor: '#ffffff',
+            color: '#4c1d95',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  neonText: {
+    id: 'neonText',
+    label: 'Neon Text',
+    icon: 'Flame',
+    category: 'UI',
+    build: () => [
+      createNode('heading', {
+        text: 'NEON',
+        level: 'h1',
+        style: {
+          fontSize: '72px',
+          fontWeight: '900',
+          color: '#fff',
+          textShadow: '0 0 10px #ec4899, 0 0 20px #ec4899, 0 0 40px #ec4899, 0 0 80px #ec4899',
+          letterSpacing: '0.1em',
+        },
+      }),
+    ],
+  },
 }

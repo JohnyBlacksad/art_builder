@@ -449,6 +449,29 @@ export default function PropertiesPanel() {
         {/* Effects */}
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-pink-400 uppercase tracking-wider">Effects</h3>
+          <div className="space-y-1.5">
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Gradient Presets</span>
+            <div className="grid grid-cols-4 gap-1">
+              {[
+                { name: 'Sunset', value: 'linear-gradient(to right, #f97316, #db2777)' },
+                { name: 'Ocean', value: 'linear-gradient(to right, #0ea5e9, #6366f1)' },
+                { name: 'Neon', value: 'linear-gradient(to right, #22c55e, #3b82f6)' },
+                { name: 'Purple', value: 'linear-gradient(to right, #7c3aed, #db2777)' },
+                { name: 'Fire', value: 'linear-gradient(to right, #ef4444, #f97316)' },
+                { name: 'Ice', value: 'linear-gradient(to right, #06b6d4, #3b82f6)' },
+                { name: 'Gold', value: 'linear-gradient(to right, #eab308, #f97316)' },
+                { name: 'Midnight', value: 'linear-gradient(to right, #1e3a8a, #7c3aed)' },
+              ].map((g) => (
+                <button
+                  key={g.name}
+                  onClick={() => setStyle('backgroundImage', g.value)}
+                  className="h-8 rounded-md border border-white/10 hover:border-white/30 transition-colors"
+                  style={{ backgroundImage: g.value }}
+                  title={g.name}
+                />
+              ))}
+            </div>
+          </div>
           <ControlRow label="Background Image">
             <StyleInput value={style.backgroundImage || ''} onChange={(v) => setStyle('backgroundImage', v)} placeholder="none or url(...)" />
           </ControlRow>
@@ -478,6 +501,13 @@ export default function PropertiesPanel() {
         {(isTextLike || isContainer) && (
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Typography</h3>
+            <ControlRow label="Font Family">
+              <StyleSelect
+                value={style.fontFamily || ''}
+                onChange={(v) => setStyle('fontFamily', v)}
+                options={['', 'Inter', 'Roboto', 'Playfair Display', 'Montserrat', 'Poppins', 'Open Sans', 'Lato', 'Merriweather']}
+              />
+            </ControlRow>
             <ControlRow label="Font Size">
               <StyleInput value={style.fontSize || ''} onChange={(v) => setStyle('fontSize', v)} placeholder="16px" />
             </ControlRow>
