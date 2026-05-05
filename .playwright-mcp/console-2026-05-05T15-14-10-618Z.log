@@ -1,5 +1,0 @@
-[      48ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:1420/node_modules/.vite/deps/react-dom_client.js?v=379a6509:14337
-[      48ms] Error: Could not resolve "immer" imported by "zustand". Is it installed?
-    at http://localhost:1420/node_modules/.vite/deps/zustand_middleware_immer.js?v=86242eb0:6:8
-    at http://localhost:1420/node_modules/.vite/deps/chunk-CYJPkc-J.js?v=5d94b666:8:49
-    at http://localhost:1420/node_modules/.vite/deps/zustand_middleware_immer.js?v=86242eb0:7:5
