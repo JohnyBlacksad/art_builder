@@ -121,6 +121,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   }, [node.id])
 
   const isContainer = ['container', 'flex', 'grid'].includes(node.type)
+  const [radioSelected, setRadioSelected] = useState(false)
 
   const { setNodeRef, isOver } = useDroppable({
     id: `drop-${node.id}`,
@@ -157,6 +158,27 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         ))}
       </>
     )
+
+    // Interactive radio button in preview
+    if (preview && node.props.isRadio && !isAnimated) {
+      return (
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setRadioSelected((s) => !s)}
+          className={baseClass}
+          style={{
+            ...baseStyle,
+            borderColor: radioSelected ? '#4f46e5' : baseStyle.borderColor,
+            borderWidth: radioSelected ? '3px' : baseStyle.borderWidth || '2px',
+            boxShadow: radioSelected ? '0 0 0 2px #c7d2fe' : 'none',
+          }}
+          data-node-id={node.id}
+        >
+          {children}
+        </motion.div>
+      )
+    }
 
     if (isAnimated) {
       return wrapHandles(
@@ -222,6 +244,20 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       const text = (node.props.text as string) || ''
       if (isAnimated) {
         return wrapHandles(<motion.button key={playTick} {...commonProps} {...motionProps}>{text}</motion.button>, showHandles, node.id)
+      }
+      // Interactive button in preview
+      if (preview) {
+        return (
+          <motion.button
+            whileHover={{ scale: 1.02, filter: 'brightness(1.1)' }}
+            whileTap={{ scale: 0.97 }}
+            className={baseClass}
+            style={baseStyle}
+            data-node-id={node.id}
+          >
+            {text}
+          </motion.button>
+        )
       }
       return wrapHandles(<button {...commonProps}>{text}</button>, showHandles, node.id)
     }

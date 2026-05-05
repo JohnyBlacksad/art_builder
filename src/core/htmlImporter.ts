@@ -395,6 +395,9 @@ function elementToNode(el: Element): ComponentNode | null {
           }
         }
         return createNode('container', {
+          isRadio: true,
+          radioGroup: el.getAttribute('name') || '',
+          radioValue: el.getAttribute('value') || '',
           style: {
             ...inputStyle,
             width: size,
@@ -402,6 +405,7 @@ function elementToNode(el: Element): ComponentNode | null {
             borderRadius: '50%',
             border: inputStyle.borderColor ? `2px solid ${inputStyle.borderColor}` : '2px solid #e2e8f0',
             flexShrink: 0,
+            cursor: 'pointer',
           },
         })
       }
