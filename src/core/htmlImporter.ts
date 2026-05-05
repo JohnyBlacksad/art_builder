@@ -69,9 +69,58 @@ function sizeValue(n: string): string {
   return `${num * 0.25}rem`
 }
 
+function parseGradient(classes: string[]): string | null {
+  const dirMap: Record<string, string> = {
+    'bg-gradient-to-t': 'to top', 'bg-gradient-to-tr': 'to top right',
+    'bg-gradient-to-r': 'to right', 'bg-gradient-to-br': 'to bottom right',
+    'bg-gradient-to-b': 'to bottom', 'bg-gradient-to-bl': 'to bottom left',
+    'bg-gradient-to-l': 'to left', 'bg-gradient-to-tl': 'to top left',
+    'bg-linear-to-t': 'to top', 'bg-linear-to-tr': 'to top right',
+    'bg-linear-to-r': 'to right', 'bg-linear-to-br': 'to bottom right',
+    'bg-linear-to-b': 'to bottom', 'bg-linear-to-bl': 'to bottom left',
+    'bg-linear-to-l': 'to left', 'bg-linear-to-tl': 'to top left',
+  }
+
+  let direction: string | null = null
+  let fromColor: string | null = null
+  let viaColor: string | null = null
+  let toColor: string | null = null
+
+  for (const cls of classes) {
+    const c = cls.replace(/^(sm|md|lg|xl|2xl):/, '')
+    if (dirMap[c]) direction = dirMap[c]
+    if (c.startsWith('from-')) {
+      const colorName = c.slice(5)
+      fromColor = tailwindColors[colorName] || colorName
+    }
+    if (c.startsWith('via-')) {
+      const colorName = c.slice(4)
+      viaColor = tailwindColors[colorName] || colorName
+    }
+    if (c.startsWith('to-') && !c.startsWith('to-top') && !c.startsWith('to-bottom') && !c.startsWith('to-left') && !c.startsWith('to-right') && !dirMap[c]) {
+      const colorName = c.slice(3)
+      toColor = tailwindColors[colorName] || colorName
+    }
+  }
+
+  if (!direction) return null
+  const stops: string[] = []
+  if (fromColor) stops.push(fromColor)
+  if (viaColor) stops.push(viaColor)
+  if (toColor) stops.push(toColor)
+  if (stops.length < 2 && fromColor) stops.push('transparent')
+  if (stops.length < 2) return null
+
+  return `linear-gradient(${direction}, ${stops.join(', ')})`
+}
+
 function parseTailwindClasses(className: string): Record<string, string> {
   const style: Record<string, string> = {}
   const classes = className.split(/\s+/).filter(Boolean)
+
+  // Gradient
+  const gradient = parseGradient(classes)
+  if (gradient) style.backgroundImage = gradient
 
   for (const cls of classes) {
     const c = cls.replace(/^(sm|md|lg|xl|2xl):/, '')
@@ -302,6 +351,52 @@ function parseTailwindClasses(className: string): Record<string, string> {
     if (bottomMatch) style.bottom = sizeValue(bottomMatch[1])
     const leftMatch = c.match(/^left-(\d+)$/)
     if (leftMatch) style.left = sizeValue(leftMatch[1])
+
+    // Blur
+    const blurMap: Record<string, string> = { 'none': '0', 'sm': '4px', 'md': '12px', 'lg': '16px', 'xl': '24px', '2xl': '40px', '3xl': '64px' }
+    const blurMatch = c.match(/^blur(-\w+)?$/)
+    if (blurMatch) {
+      const size = blurMatch[1]?.slice(1) || 'DEFAULT'
+      const blurVal = blurMap[size] || (size === 'DEFAULT' ? '8px' : sizeValue(size))
+      style.filter = `blur(${blurVal})`
+    }
+
+    // Background clip
+    if (c === 'bg-clip-text') style.backgroundClip = 'text'
+    if (c === 'text-transparent') style.color = 'transparent'
+
+    // Rotate
+    const rotateMatch = c.match(/^rotate-(\d+)$/)
+    if (rotateMatch) style.transform = `rotate(${rotateMatch[1]}deg)`
+
+    // Ring
+    const ringMatch = c.match(/^ring-(\d+|inset)$/)
+    if (ringMatch) {
+      if (ringMatch[1] === 'inset') {
+        // handled separately
+      } else {
+        const ringWidth = ringMatch[1] === '0' ? '0px' : `${ringMatch[1]}px`
+        const ringColor = style.borderColor || '#e2e8f0'
+        style.boxShadow = `0 0 0 ${ringWidth} ${ringColor}`
+      }
+    }
+    if (c === 'ring') style.boxShadow = `0 0 0 3px ${style.borderColor || '#e2e8f0'}`
+
+    // sr-only
+    if (c === 'sr-only') {
+      style.position = 'absolute'
+      style.width = '1px'
+      style.height = '1px'
+      style.padding = '0'
+      style.margin = '-1px'
+      style.overflow = 'hidden'
+      style.clip = 'rect(0, 0, 0, 0)'
+      style.whiteSpace = 'nowrap'
+      style.borderWidth = '0'
+    }
+
+    // Transform GPU
+    if (c === 'transform-gpu') style.transform = 'translate3d(0, 0, 0)'
   }
 
   return style
