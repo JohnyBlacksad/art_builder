@@ -153,6 +153,7 @@ interface Store extends EditorState {
   addPage: (name?: string) => void
   deletePage: (id: string) => void
   renamePage: (id: string, name: string) => void
+  setPageSlug: (id: string, slug: string) => void
   setCurrentPage: (id: string) => void
 }
 
@@ -343,6 +344,14 @@ export const useStore = create<Store>()(
       set((state) => {
         const page = state.pages.find(p => p.id === id)
         if (page) page.name = name
+      }),
+
+    setPageSlug: (id, slug) =>
+      set((state) => {
+        const page = state.pages.find(p => p.id === id)
+        if (page) {
+          page.slug = slug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        }
       }),
 
     setCurrentPage: (id) =>

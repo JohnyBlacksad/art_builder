@@ -11,6 +11,8 @@ export default function Toolbar() {
   const zoom = useStore((s) => s.zoom)
   const setZoom = useStore((s) => s.setZoom)
   const root = useStore((s) => s.root)
+  const pages = useStore((s) => s.pages)
+  const currentPageId = useStore((s) => s.currentPageId)
   const selectedId = useStore((s) => s.selectedId)
   const undo = useStore((s) => s.undo)
   const redo = useStore((s) => s.redo)
@@ -104,8 +106,6 @@ export default function Toolbar() {
 
         <button
           onClick={() => {
-            const pages = useStore.getState().pages
-            const currentPageId = useStore.getState().currentPageId
             const currentPage = pages.find(p => p.id === currentPageId)
             localStorage.setItem('artbuilder:preview', JSON.stringify(currentPage?.root || root))
             window.open(`${window.location.pathname}?preview=1`, '_blank')

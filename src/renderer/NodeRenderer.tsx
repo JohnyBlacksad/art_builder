@@ -257,6 +257,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   )
 
   const baseStyle = (node.props.style as React.CSSProperties) || {}
+  const interactiveProps = getInteractiveMotionProps(node)
 
   if (isContainer) {
     const children = (
@@ -266,8 +267,6 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         ))}
       </>
     )
-
-    const interactiveProps = getInteractiveMotionProps(node)
 
     // Interactive radio button in preview
     if (preview && node.props.isRadio && !isAnimated) {

@@ -9,18 +9,24 @@ export default function PagesPanel() {
   const addPage = useStore((s) => s.addPage)
   const deletePage = useStore((s) => s.deletePage)
   const renamePage = useStore((s) => s.renamePage)
+  const setPageSlug = useStore((s) => s.setPageSlug)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
+  const [editSlug, setEditSlug] = useState('')
 
   const startEdit = (page: typeof pages[0]) => {
     setEditingId(page.id)
     setEditName(page.name)
+    setEditSlug(page.slug)
   }
 
   const saveEdit = () => {
     if (editingId && editName.trim()) {
       renamePage(editingId, editName.trim())
+      if (editSlug.trim()) {
+        setPageSlug(editingId, editSlug.trim())
+      }
     }
     setEditingId(null)
   }
@@ -28,6 +34,7 @@ export default function PagesPanel() {
   const cancelEdit = () => {
     setEditingId(null)
     setEditName('')
+    setEditSlug('')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -80,27 +87,41 @@ export default function PagesPanel() {
                 <FileText className={`w-4 h-4 shrink-0 ${isCurrent ? 'text-blue-400' : 'text-slate-500'}`} />
 
                 {isEditing ? (
-                  <div className="flex-1 flex items-center gap-1">
+                  <div className="flex-1 flex flex-col gap-1">
                     <input
                       autoFocus
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      onBlur={saveEdit}
-                      className="flex-1 min-w-0 bg-slate-900/50 border border-blue-500/40 rounded px-1.5 py-0.5 text-[11px] text-slate-200 focus:outline-none"
+                      placeholder="Page name"
+                      className="w-full bg-slate-900/50 border border-blue-500/40 rounded px-1.5 py-0.5 text-[11px] text-slate-200 focus:outline-none"
                     />
-                    <button
-                      onClick={(e) => { e.stopPropagation(); saveEdit() }}
-                      className="p-0.5 rounded hover:bg-slate-700 text-emerald-400"
-                    >
-                      <Check className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); cancelEdit() }}
-                      className="p-0.5 rounded hover:bg-slate-700 text-slate-400"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-500">/</span>
+                      <input
+                        value={editSlug}
+                        onChange={(e) => setEditSlug(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="url-slug"
+                        className="flex-1 bg-slate-900/50 border border-blue-500/40 rounded px-1.5 py-0.5 text-[11px] text-slate-200 focus:outline-none"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); saveEdit() }}
+                        className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600/20 text-emerald-400 text-[10px] hover:bg-emerald-600/30 transition-colors"
+                      >
+                        <Check className="w-2.5 h-2.5" />
+                        Save
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); cancelEdit() }}
+                        className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-700/30 text-slate-400 text-[10px] hover:bg-slate-700/50 transition-colors"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -132,7 +153,7 @@ export default function PagesPanel() {
                     <button
                       onClick={(e) => { e.stopPropagation(); startEdit(page) }}
                       className="p-1 rounded hover:bg-slate-700 text-slate-500 hover:text-slate-300 transition-colors"
-                      title="Rename"
+                      title="Edit name & slug"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
@@ -156,7 +177,7 @@ export default function PagesPanel() {
       {/* Tips */}
       <div className="p-3 border-t border-sidebar-border">
         <p className="text-[10px] text-slate-600 leading-relaxed">
-          Each page has its own URL slug and elements tree. Click the eye icon to preview any page.
+          Each page has its own URL slug and elements tree. Click the pencil icon to edit name and slug.
         </p>
       </div>
     </div>
