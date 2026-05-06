@@ -108,6 +108,7 @@ function moveInParent(root: ComponentNode, nodeId: string, direction: -1 | 1): v
 export interface Page {
   id: string
   name: string
+  slug: string
   root: ComponentNode
 }
 
@@ -115,6 +116,7 @@ const defaultRoot = createDefaultRoot()
 const homePage: Page = {
   id: generatePageId(),
   name: 'Home',
+  slug: 'home',
   root: JSON.parse(JSON.stringify(defaultRoot)),
 }
 
@@ -303,6 +305,7 @@ export const useStore = create<Store>()(
         const newPage: Page = {
           id: generatePageId(),
           name: name || `Page ${state.pages.length + 1}`,
+          slug: name?.toLowerCase().replace(/\s+/g, '-') || `page-${state.pages.length + 1}`,
           root: createDefaultRoot(),
         }
         state.pages.push(newPage)
