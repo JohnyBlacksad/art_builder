@@ -109,6 +109,90 @@ function wrapHandles(el: React.ReactNode, show: boolean, nodeId: string) {
   )
 }
 
+function LayoutOverlay({ node, isSelected }: { node: ComponentNode; isSelected: boolean }) {
+  if (!isSelected) return null
+  const style = (node.props.style as Record<string, string>) || {}
+  const isContainer = ['container', 'flex', 'grid'].includes(node.type)
+  if (!isContainer) return null
+
+  const padding = style.padding || '0'
+  const gap = style.gap || '0'
+  const isGrid = node.type === 'grid' || style.display === 'grid'
+  const gridCols = style.gridTemplateColumns
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
+      {/* Padding indicator */}
+      {padding !== '0' && padding !== '0px' && (
+        <div
+          className="absolute inset-0 border-2 border-dashed border-emerald-400/50"
+          style={{ margin: padding }}
+        >
+          <span className="absolute -top-4 left-0 text-[9px] text-emerald-400 bg-emerald-950/80 px-1 rounded">
+            padding: {padding}
+          </span>
+        </div>
+      )}
+
+      {/* Grid lines */}
+      {isGrid && gridCols && (
+        <div
+          className="absolute inset-0"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: gridCols,
+            gap: gap,
+            padding: padding,
+          }}
+        >
+          {node.children.map((_, i) => (
+            <div
+              key={i}
+              className="border border-dashed border-blue-400/40 rounded-sm relative"
+            >
+              <span className="absolute top-0.5 left-0.5 text-[8px] text-blue-400 bg-blue-950/80 px-0.5 rounded">
+                {i + 1}
+              </span>
+            </div>
+          ))}
+          {/* Empty cells if needed */}
+          {Array.from({ length: Math.max(0, parseGridCols(gridCols) - node.children.length) }).map((_, i) => (
+            <div
+              key={`empty-${i}`}
+              className="border border-dashed border-blue-400/20 rounded-sm"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Flex gap indicator */}
+      {!isGrid && style.display?.includes('flex') && gap !== '0' && gap !== '0px' && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="bg-amber-400/10 border border-dashed border-amber-400/30 rounded flex items-center justify-center"
+            style={{
+              width: style.flexDirection === 'column' ? '30px' : 'auto',
+              height: style.flexDirection === 'column' ? 'auto' : '20px',
+            }}
+          >
+            <span className="text-[8px] text-amber-400 bg-amber-950/80 px-1 rounded">
+              gap: {gap}
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function parseGridCols(cols: string): number {
+  if (cols.includes('repeat')) {
+    const match = cols.match(/repeat\((\d+)/)
+    if (match) return parseInt(match[1])
+  }
+  return cols.split(' ').filter(Boolean).length || 1
+}
+
 function getInteractiveMotionProps(node: ComponentNode) {
   const interactive = node.props.interactive as InteractiveConfig | undefined
   if (!interactive) return null
@@ -202,6 +286,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           data-node-id={node.id}
         >
           {children}
+          <LayoutOverlay node={node} isSelected={isSelected} />
         </motion.div>
       )
     }
@@ -218,6 +303,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           {...interactiveProps}
         >
           {children}
+          <LayoutOverlay node={node} isSelected={isSelected} />
         </motion.div>
       )
     }
@@ -234,6 +320,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           {...motionProps}
         >
           {children}
+          <LayoutOverlay node={node} isSelected={isSelected} />
         </motion.div>,
         showHandles,
         node.id
@@ -249,6 +336,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         data-node-id={node.id}
       >
         {children}
+        <LayoutOverlay node={node} isSelected={isSelected} />
       </div>,
       showHandles,
       node.id

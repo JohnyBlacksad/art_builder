@@ -1,6 +1,16 @@
+import { useState } from 'react'
 import { useStore } from '../core/store'
 import { componentRegistry } from '../core/registry'
-import { Trash2, ArrowUp, ArrowDown, Play } from 'lucide-react'
+import {
+  Trash2, ArrowUp, ArrowDown, Play,
+  ChevronDown, ChevronRight,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  AlignStartVertical, AlignCenterVertical, AlignEndVertical,
+  LayoutGrid, Rows3, Square,
+  WrapText, StretchHorizontal,
+  Space, AlignHorizontalSpaceBetween, AlignHorizontalSpaceAround, AlignVerticalDistributeCenter,
+  X
+} from 'lucide-react'
 
 interface ControlRowProps {
   label: string
@@ -10,7 +20,7 @@ interface ControlRowProps {
 function ControlRow({ label, children }: ControlRowProps) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-slate-500 w-24 shrink-0">{label}</span>
+      <span className="text-[11px] text-slate-500 w-20 shrink-0">{label}</span>
       {children}
     </div>
   )
@@ -33,7 +43,7 @@ function StyleInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+      className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
     />
   )
 }
@@ -51,7 +61,7 @@ function StyleSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+      className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
     >
       {options.map((opt) => (
         <option key={opt} value={opt}>
@@ -59,6 +69,93 @@ function StyleSelect({
         </option>
       ))}
     </select>
+  )
+}
+
+function ToggleButton({
+  active,
+  onClick,
+  icon: Icon,
+  label,
+}: {
+  active: boolean
+  onClick: () => void
+  icon: React.ComponentType<{ className?: string }>
+  label?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center justify-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-all border ${
+        active
+          ? 'bg-blue-500/15 border-blue-500/40 text-blue-400'
+          : 'bg-slate-900/30 border-slate-700/30 text-slate-500 hover:text-slate-300 hover:border-slate-600/50'
+      }`}
+      title={label}
+    >
+      <Icon className="w-3.5 h-3.5" />
+      {label && <span>{label}</span>}
+    </button>
+  )
+}
+
+function IconToggleGroup({
+  value,
+  onChange,
+  options,
+}: {
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; icon: React.ComponentType<{ className?: string }>; label: string }[]
+}) {
+  return (
+    <div className="flex gap-0.5">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={`p-1.5 rounded-md transition-all ${
+            value === opt.value
+              ? 'bg-blue-500/15 text-blue-400'
+              : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+          }`}
+          title={opt.label}
+        >
+          <opt.icon className="w-3.5 h-3.5" />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function CollapsibleSection({
+  title,
+  color,
+  defaultOpen = true,
+  children,
+}: {
+  title: string
+  color: string
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
+
+  return (
+    <div className="border-b border-slate-800/50 last:border-b-0">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 w-full py-2.5 px-1 hover:bg-slate-800/30 rounded-md transition-colors"
+      >
+        {open ? (
+          <ChevronDown className="w-3 h-3 text-slate-500" />
+        ) : (
+          <ChevronRight className="w-3 h-3 text-slate-500" />
+        )}
+        <h3 className={`text-[10px] font-semibold uppercase tracking-wider ${color}`}>{title}</h3>
+      </button>
+      {open && <div className="pb-3 px-1 space-y-2">{children}</div>}
+    </div>
   )
 }
 
@@ -129,28 +226,29 @@ export default function PropertiesPanel() {
 
   return (
     <div className="w-80 h-full bg-sidebar border-l border-sidebar-border flex flex-col">
+      {/* Header */}
       <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-slate-100 uppercase tracking-wider">Properties</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             {meta?.label || node.type} <span className="text-slate-700">•</span> {node.id === 'root' ? 'Page Root' : node.id.slice(0, 12)}
           </p>
         </div>
         {node.id !== 'root' && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => moveUp(node.id)}
               className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
               title="Move up"
             >
-              <ArrowUp className="w-4 h-4" />
+              <ArrowUp className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => moveDown(node.id)}
               className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
               title="Move down"
             >
-              <ArrowDown className="w-4 h-4" />
+              <ArrowDown className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => {
@@ -160,24 +258,23 @@ export default function PropertiesPanel() {
               className="p-1.5 rounded-md hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
               title="Delete"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto">
         {/* Content */}
         {isTextLike && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Content</h3>
+          <CollapsibleSection title="Content" color="text-blue-400" defaultOpen={true}>
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-500">Text</label>
+              <label className="text-[11px] text-slate-500">Text</label>
               <textarea
                 value={String(node.props.text || '')}
                 onChange={(e) => updateProps(node.id, { text: e.target.value })}
                 rows={3}
-                className="w-full bg-slate-800 border border-slate-700 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 resize-none transition-all"
               />
             </div>
             {node.type === 'heading' && (
@@ -189,31 +286,28 @@ export default function PropertiesPanel() {
                 />
               </ControlRow>
             )}
-          </div>
+          </CollapsibleSection>
         )}
 
         {(isImage || node.type === 'video') && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
-              {node.type === 'video' ? 'Video' : 'Image'}
-            </h3>
+          <CollapsibleSection title={node.type === 'video' ? 'Video' : 'Image'} color="text-blue-400" defaultOpen={true}>
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-500">URL</label>
+              <label className="text-[11px] text-slate-500">URL</label>
               <input
                 type="text"
                 value={String(node.props.src || '')}
                 onChange={(e) => updateProps(node.id, { src: e.target.value })}
-                className="w-full bg-slate-800 border border-slate-700 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-900/50 border border-slate-700/50 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
               />
             </div>
             {node.type === 'image' && (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-500">Alt</label>
+                <label className="text-[11px] text-slate-500">Alt</label>
                 <input
                   type="text"
                   value={String(node.props.alt || '')}
                   onChange={(e) => updateProps(node.id, { alt: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-900/50 border border-slate-700/50 rounded-md px-2.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500/60 focus:ring-1 focus:ring-blue-500/20 transition-all"
                 />
               </div>
             )}
@@ -225,7 +319,7 @@ export default function PropertiesPanel() {
                   { key: 'muted', label: 'Muted' },
                   { key: 'controls', label: 'Controls' },
                 ].map(({ key, label }) => (
-                  <label key={key} className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+                  <label key={key} className="flex items-center gap-1.5 text-[11px] text-slate-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={!!node.props[key]}
@@ -237,13 +331,12 @@ export default function PropertiesPanel() {
                 ))}
               </div>
             )}
-          </div>
+          </CollapsibleSection>
         )}
 
         {/* Particles */}
         {node.type === 'particles' && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Particles</h3>
+          <CollapsibleSection title="Particles" color="text-blue-400" defaultOpen={true}>
             <ControlRow label="Count">
               <div className="flex items-center gap-1 flex-1">
                 <input
@@ -255,7 +348,7 @@ export default function PropertiesPanel() {
                   onChange={(e) => updateProps(node.id, { count: parseInt(e.target.value) })}
                   className="flex-1 accent-blue-500"
                 />
-                <span className="text-xs text-slate-400 w-10 text-right">{node.props.count || 80}</span>
+                <span className="text-[11px] text-slate-400 w-10 text-right">{node.props.count || 80}</span>
               </div>
             </ControlRow>
             <ControlRow label="Color">
@@ -270,7 +363,7 @@ export default function PropertiesPanel() {
                   type="text"
                   value={String(node.props.color || '')}
                   onChange={(e) => updateProps(node.id, { color: e.target.value })}
-                  className="flex-1 min-w-0 bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60 transition-all"
                 />
               </div>
             </ControlRow>
@@ -285,7 +378,7 @@ export default function PropertiesPanel() {
                   onChange={(e) => updateProps(node.id, { speed: parseFloat(e.target.value) })}
                   className="flex-1 accent-blue-500"
                 />
-                <span className="text-xs text-slate-400 w-10 text-right">{node.props.speed || 0.5}</span>
+                <span className="text-[11px] text-slate-400 w-10 text-right">{node.props.speed || 0.5}</span>
               </div>
             </ControlRow>
             <ControlRow label="Size">
@@ -299,55 +392,104 @@ export default function PropertiesPanel() {
                   onChange={(e) => updateProps(node.id, { size: parseInt(e.target.value) })}
                   className="flex-1 accent-blue-500"
                 />
-                <span className="text-xs text-slate-400 w-10 text-right">{node.props.size || 2}</span>
+                <span className="text-[11px] text-slate-400 w-10 text-right">{node.props.size || 2}</span>
               </div>
             </ControlRow>
-          </div>
+          </CollapsibleSection>
         )}
 
         {/* Layout */}
         {isContainer && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Layout</h3>
+          <CollapsibleSection title="Layout" color="text-blue-400" defaultOpen={true}>
             <ControlRow label="Display">
-              <StyleSelect
-                value={style.display || 'block'}
-                onChange={(v) => setStyle('display', v)}
-                options={['block', 'flex', 'grid', 'inline-block', 'inline-flex']}
-              />
+              <div className="flex gap-1">
+                <ToggleButton
+                  active={style.display === 'block' || !style.display}
+                  onClick={() => setStyle('display', 'block')}
+                  icon={Square}
+                  label="Block"
+                />
+                <ToggleButton
+                  active={style.display === 'flex'}
+                  onClick={() => setStyle('display', 'flex')}
+                  icon={Rows3}
+                  label="Flex"
+                />
+                <ToggleButton
+                  active={style.display === 'grid'}
+                  onClick={() => setStyle('display', 'grid')}
+                  icon={LayoutGrid}
+                  label="Grid"
+                />
+              </div>
             </ControlRow>
+
             {style.display?.includes('flex') && (
               <>
                 <ControlRow label="Direction">
-                  <StyleSelect
-                    value={style.flexDirection || 'row'}
-                    onChange={(v) => setStyle('flexDirection', v)}
-                    options={['row', 'row-reverse', 'column', 'column-reverse']}
-                  />
+                  <div className="flex gap-1">
+                    <ToggleButton
+                      active={style.flexDirection === 'row' || !style.flexDirection}
+                      onClick={() => setStyle('flexDirection', 'row')}
+                      icon={Rows3}
+                      label="Row"
+                    />
+                    <ToggleButton
+                      active={style.flexDirection === 'column'}
+                      onClick={() => setStyle('flexDirection', 'column')}
+                      icon={LayoutGrid}
+                      label="Col"
+                    />
+                  </div>
                 </ControlRow>
+
                 <ControlRow label="Justify">
-                  <StyleSelect
+                  <IconToggleGroup
                     value={style.justifyContent || 'flex-start'}
                     onChange={(v) => setStyle('justifyContent', v)}
-                    options={['flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly']}
+                    options={[
+                      { value: 'flex-start', icon: AlignStartVertical, label: 'Start' },
+                      { value: 'center', icon: AlignCenterVertical, label: 'Center' },
+                      { value: 'flex-end', icon: AlignEndVertical, label: 'End' },
+                      { value: 'space-between', icon: AlignHorizontalSpaceBetween, label: 'Between' },
+                      { value: 'space-around', icon: AlignHorizontalSpaceAround, label: 'Around' },
+                      { value: 'space-evenly', icon: AlignVerticalDistributeCenter, label: 'Evenly' },
+                    ]}
                   />
                 </ControlRow>
+
                 <ControlRow label="Align">
-                  <StyleSelect
+                  <IconToggleGroup
                     value={style.alignItems || 'stretch'}
                     onChange={(v) => setStyle('alignItems', v)}
-                    options={['stretch', 'flex-start', 'center', 'flex-end', 'baseline']}
+                    options={[
+                      { value: 'stretch', icon: StretchHorizontal, label: 'Stretch' },
+                      { value: 'flex-start', icon: AlignStartVertical, label: 'Start' },
+                      { value: 'center', icon: AlignCenterVertical, label: 'Center' },
+                      { value: 'flex-end', icon: AlignEndVertical, label: 'End' },
+                    ]}
                   />
                 </ControlRow>
+
                 <ControlRow label="Wrap">
-                  <StyleSelect
-                    value={style.flexWrap || 'nowrap'}
-                    onChange={(v) => setStyle('flexWrap', v)}
-                    options={['nowrap', 'wrap', 'wrap-reverse']}
-                  />
+                  <div className="flex gap-1">
+                    <ToggleButton
+                      active={style.flexWrap === 'nowrap' || !style.flexWrap}
+                      onClick={() => setStyle('flexWrap', 'nowrap')}
+                      icon={X}
+                      label="No"
+                    />
+                    <ToggleButton
+                      active={style.flexWrap === 'wrap'}
+                      onClick={() => setStyle('flexWrap', 'wrap')}
+                      icon={WrapText}
+                      label="Yes"
+                    />
+                  </div>
                 </ControlRow>
               </>
             )}
+
             {style.display === 'grid' && (
               <ControlRow label="Columns">
                 <StyleInput
@@ -357,26 +499,25 @@ export default function PropertiesPanel() {
                 />
               </ControlRow>
             )}
+
             <ControlRow label="Gap">
               <StyleInput value={style.gap || ''} onChange={(v) => setStyle('gap', v)} placeholder="16px" />
             </ControlRow>
-          </div>
+          </CollapsibleSection>
         )}
 
         {/* Spacing */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Spacing</h3>
+        <CollapsibleSection title="Spacing" color="text-blue-400" defaultOpen={false}>
           <ControlRow label="Padding">
             <StyleInput value={style.padding || ''} onChange={(v) => setStyle('padding', v)} placeholder="16px" />
           </ControlRow>
           <ControlRow label="Margin">
             <StyleInput value={style.margin || ''} onChange={(v) => setStyle('margin', v)} placeholder="0" />
           </ControlRow>
-        </div>
+        </CollapsibleSection>
 
         {/* Size */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Size</h3>
+        <CollapsibleSection title="Size" color="text-blue-400" defaultOpen={false}>
           <ControlRow label="Width">
             <StyleInput value={style.width || ''} onChange={(v) => setStyle('width', v)} placeholder="auto" />
           </ControlRow>
@@ -389,11 +530,10 @@ export default function PropertiesPanel() {
           <ControlRow label="Max Width">
             <StyleInput value={style.maxWidth || ''} onChange={(v) => setStyle('maxWidth', v)} placeholder="none" />
           </ControlRow>
-        </div>
+        </CollapsibleSection>
 
         {/* Appearance */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Appearance</h3>
+        <CollapsibleSection title="Appearance" color="text-blue-400" defaultOpen={true}>
           <ControlRow label="Background">
             <div className="flex gap-1 flex-1">
               <input
@@ -444,11 +584,10 @@ export default function PropertiesPanel() {
               placeholder="none"
             />
           </ControlRow>
-        </div>
+        </CollapsibleSection>
 
         {/* Effects */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-pink-400 uppercase tracking-wider">Effects</h3>
+        <CollapsibleSection title="Effects" color="text-pink-400" defaultOpen={false}>
           <div className="space-y-1.5">
             <span className="text-[10px] text-slate-500 uppercase tracking-wider">Gradient Presets</span>
             <div className="grid grid-cols-4 gap-1">
@@ -472,13 +611,13 @@ export default function PropertiesPanel() {
               ))}
             </div>
           </div>
-          <ControlRow label="Background Image">
+          <ControlRow label="BG Image">
             <StyleInput value={style.backgroundImage || ''} onChange={(v) => setStyle('backgroundImage', v)} placeholder="none or url(...)" />
           </ControlRow>
           <ControlRow label="Filter">
             <StyleInput value={style.filter || ''} onChange={(v) => setStyle('filter', v)} placeholder="blur(8px) brightness(1.1)" />
           </ControlRow>
-          <ControlRow label="Backdrop Filter">
+          <ControlRow label="Backdrop">
             <StyleInput value={style.backdropFilter || ''} onChange={(v) => setStyle('backdropFilter', v)} placeholder="blur(12px)" />
           </ControlRow>
           <ControlRow label="Opacity">
@@ -492,15 +631,14 @@ export default function PropertiesPanel() {
                 onChange={(e) => setStyle('opacity', e.target.value)}
                 className="flex-1 accent-pink-500"
               />
-              <span className="text-xs text-slate-400 w-10 text-right">{style.opacity || '1'}</span>
+              <span className="text-[11px] text-slate-400 w-10 text-right">{style.opacity || '1'}</span>
             </div>
           </ControlRow>
-        </div>
+        </CollapsibleSection>
 
         {/* Typography */}
         {(isTextLike || isContainer) && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">Typography</h3>
+          <CollapsibleSection title="Typography" color="text-blue-400" defaultOpen={false}>
             <ControlRow label="Font Family">
               <StyleSelect
                 value={style.fontFamily || ''}
@@ -511,7 +649,7 @@ export default function PropertiesPanel() {
             <ControlRow label="Font Size">
               <StyleInput value={style.fontSize || ''} onChange={(v) => setStyle('fontSize', v)} placeholder="16px" />
             </ControlRow>
-            <ControlRow label="Font Weight">
+            <ControlRow label="Weight">
               <StyleSelect
                 value={style.fontWeight || ''}
                 onChange={(v) => setStyle('fontWeight', v)}
@@ -522,10 +660,15 @@ export default function PropertiesPanel() {
               <StyleInput value={style.lineHeight || ''} onChange={(v) => setStyle('lineHeight', v)} placeholder="1.5" />
             </ControlRow>
             <ControlRow label="Text Align">
-              <StyleSelect
-                value={style.textAlign || ''}
+              <IconToggleGroup
+                value={style.textAlign || 'left'}
                 onChange={(v) => setStyle('textAlign', v)}
-                options={['', 'left', 'center', 'right', 'justify']}
+                options={[
+                  { value: 'left', icon: AlignLeft, label: 'Left' },
+                  { value: 'center', icon: AlignCenter, label: 'Center' },
+                  { value: 'right', icon: AlignRight, label: 'Right' },
+                  { value: 'justify', icon: AlignJustify, label: 'Justify' },
+                ]}
               />
             </ControlRow>
             <ControlRow label="Letter Spacing">
@@ -535,15 +678,14 @@ export default function PropertiesPanel() {
                 placeholder="normal"
               />
             </ControlRow>
-          </div>
+          </CollapsibleSection>
         )}
 
         {/* Interactive Data */}
         {['accordion', 'dialog', 'tabs', 'select', 'tooltip', 'slider', 'switch'].includes(node.type) && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-orange-400 uppercase tracking-wider">Data</h3>
+          <CollapsibleSection title="Data" color="text-orange-400" defaultOpen={true}>
             <textarea
-              className="w-full h-32 bg-slate-800 text-slate-200 text-xs p-2 rounded border border-slate-700 font-mono resize-none focus:outline-none focus:border-orange-500"
+              className="w-full h-32 bg-slate-900/50 text-slate-200 text-xs p-2 rounded border border-slate-700/50 font-mono resize-none focus:outline-none focus:border-orange-500/60 focus:ring-1 focus:ring-orange-500/20 transition-all"
               defaultValue={JSON.stringify(node.props, null, 2)}
               onBlur={(e) => {
                 try {
@@ -555,17 +697,23 @@ export default function PropertiesPanel() {
               }}
             />
             <p className="text-[10px] text-slate-500">Edit as JSON. Be careful with syntax.</p>
-          </div>
+          </CollapsibleSection>
         )}
 
         {/* Animation */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Animation</h3>
+        <CollapsibleSection title="Animation" color="text-purple-400" defaultOpen={false}>
+          <div className="flex items-center justify-between mb-2">
+            <ControlRow label="Type">
+              <StyleSelect
+                value={anim?.type || 'none'}
+                onChange={(v) => setAnim({ type: v as any })}
+                options={['none', 'fade-in', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'scale', 'rotate', 'flip']}
+              />
+            </ControlRow>
             {anim?.type && anim.type !== 'none' && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('artbuilder:play-animation', { detail: node.id }))}
-                className="flex items-center gap-1 px-2 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-medium transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-medium transition-colors ml-2"
                 title="Play animation"
               >
                 <Play className="w-3 h-3" />
@@ -573,13 +721,6 @@ export default function PropertiesPanel() {
               </button>
             )}
           </div>
-          <ControlRow label="Type">
-            <StyleSelect
-              value={anim?.type || 'none'}
-              onChange={(v) => setAnim({ type: v as any })}
-              options={['none', 'fade-in', 'slide-up', 'slide-down', 'slide-left', 'slide-right', 'scale', 'rotate', 'flip']}
-            />
-          </ControlRow>
           {anim?.type && anim.type !== 'none' && (
             <>
               <ControlRow label="Trigger">
@@ -600,7 +741,7 @@ export default function PropertiesPanel() {
                     onChange={(e) => setAnim({ duration: parseFloat(e.target.value) })}
                     className="flex-1 accent-purple-500"
                   />
-                  <span className="text-xs text-slate-400 w-10 text-right">{anim?.duration ?? 0.5}s</span>
+                  <span className="text-[11px] text-slate-400 w-10 text-right">{anim?.duration ?? 0.5}s</span>
                 </div>
               </ControlRow>
               <ControlRow label="Delay">
@@ -614,7 +755,7 @@ export default function PropertiesPanel() {
                     onChange={(e) => setAnim({ delay: parseFloat(e.target.value) })}
                     className="flex-1 accent-purple-500"
                   />
-                  <span className="text-xs text-slate-400 w-10 text-right">{anim?.delay ?? 0}s</span>
+                  <span className="text-[11px] text-slate-400 w-10 text-right">{anim?.delay ?? 0}s</span>
                 </div>
               </ControlRow>
               <ControlRow label="Ease">
@@ -636,17 +777,16 @@ export default function PropertiesPanel() {
                       onChange={(e) => setAnim({ stagger: parseFloat(e.target.value) })}
                       className="flex-1 accent-purple-500"
                     />
-                    <span className="text-xs text-slate-400 w-10 text-right">{anim?.stagger ?? 0}s</span>
+                    <span className="text-[11px] text-slate-400 w-10 text-right">{anim?.stagger ?? 0}s</span>
                   </div>
                 </ControlRow>
               )}
             </>
           )}
-        </div>
+        </CollapsibleSection>
 
         {/* Interactive States */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Interactive States</h3>
+        <CollapsibleSection title="Interactive States" color="text-emerald-400" defaultOpen={false}>
           <ControlRow label="Hover Scale">
             <div className="flex items-center gap-1 flex-1">
               <input
@@ -658,7 +798,7 @@ export default function PropertiesPanel() {
                 onChange={(e) => setInteractive({ hoverScale: parseFloat(e.target.value) })}
                 className="flex-1 accent-emerald-500"
               />
-              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.hoverScale ?? 1.02}x</span>
+              <span className="text-[11px] text-slate-400 w-10 text-right">{interactive?.hoverScale ?? 1.02}x</span>
             </div>
           </ControlRow>
           <ControlRow label="Hover Brightness">
@@ -672,7 +812,7 @@ export default function PropertiesPanel() {
                 onChange={(e) => setInteractive({ hoverBrightness: parseFloat(e.target.value) })}
                 className="flex-1 accent-emerald-500"
               />
-              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.hoverBrightness ?? 1.1}</span>
+              <span className="text-[11px] text-slate-400 w-10 text-right">{interactive?.hoverBrightness ?? 1.1}</span>
             </div>
           </ControlRow>
           <ControlRow label="Press Scale">
@@ -686,10 +826,10 @@ export default function PropertiesPanel() {
                 onChange={(e) => setInteractive({ pressScale: parseFloat(e.target.value) })}
                 className="flex-1 accent-emerald-500"
               />
-              <span className="text-xs text-slate-400 w-10 text-right">{interactive?.pressScale ?? 0.97}x</span>
+              <span className="text-[11px] text-slate-400 w-10 text-right">{interactive?.pressScale ?? 0.97}x</span>
             </div>
           </ControlRow>
-        </div>
+        </CollapsibleSection>
       </div>
     </div>
   )

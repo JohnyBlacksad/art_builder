@@ -1172,4 +1172,259 @@ export const presetRegistry: Record<string, PresetMeta> = {
       }),
     ],
   },
+
+  // Wireframe Grid Layouts
+  grid2: {
+    id: 'grid2',
+    label: '2 Columns',
+    icon: 'Columns2',
+    category: 'Wireframes',
+    build: () => [
+      createNode('grid', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '24px',
+          padding: '32px',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  grid3: {
+    id: 'grid3',
+    label: '3 Columns',
+    icon: 'Columns3',
+    category: 'Wireframes',
+    build: () => [
+      createNode('grid', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '24px',
+          padding: '32px',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  grid4: {
+    id: 'grid4',
+    label: '4 Columns',
+    icon: 'Grid3x3',
+    category: 'Wireframes',
+    build: () => [
+      createNode('grid', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '24px',
+          padding: '32px',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px dashed #cbd5e1',
+            minHeight: '200px',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  sidebar: {
+    id: 'sidebar',
+    label: 'Sidebar Layout',
+    icon: 'PanelLeft',
+    category: 'Wireframes',
+    build: () => [
+      createNode('grid', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: '280px 1fr',
+          gap: '0px',
+          minHeight: '600px',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f1f5f9',
+            borderRight: '1px solid #e2e8f0',
+            minHeight: '600px',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '32px',
+            backgroundColor: '#ffffff',
+            minHeight: '600px',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  headerContent: {
+    id: 'headerContent',
+    label: 'Header + Content',
+    icon: 'LayoutTemplate',
+    category: 'Wireframes',
+    build: () => [
+      createNode('container', {
+        style: {
+          padding: '0',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            padding: '20px 32px',
+            backgroundColor: '#ffffff',
+            borderBottom: '1px solid #e2e8f0',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '32px',
+            backgroundColor: '#f8fafc',
+            minHeight: '500px',
+          },
+        }),
+      ]),
+    ],
+  },
+
+  bento: {
+    id: 'bento',
+    label: 'Bento Grid',
+    icon: 'GalleryThumbnails',
+    category: 'Wireframes',
+    build: () => [
+      createNode('grid', {
+        style: {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateRows: 'repeat(2, 1fr)',
+          gap: '16px',
+          padding: '32px',
+          backgroundColor: 'transparent',
+          border: 'none',
+        },
+      }, [
+        createNode('container', {
+          style: {
+            gridColumn: 'span 2',
+            gridRow: 'span 2',
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '16px',
+            border: '1px dashed #cbd5e1',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '16px',
+            border: '1px dashed #cbd5e1',
+          },
+        }),
+        createNode('container', {
+          style: {
+            padding: '24px',
+            backgroundColor: '#f8fafc',
+            borderRadius: '16px',
+            border: '1px dashed #cbd5e1',
+          },
+        }),
+      ]),
+    ],
+  },
 }

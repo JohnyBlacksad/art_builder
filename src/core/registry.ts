@@ -216,7 +216,7 @@ export const componentRegistry: Record<ComponentType, ComponentMeta> = {
   tabs: {
     type: 'tabs',
     label: 'Tabs',
-    icon: 'Tab',
+    icon: 'NotebookTabs',
     category: 'basic',
     defaultProps: {
       tabs: [
