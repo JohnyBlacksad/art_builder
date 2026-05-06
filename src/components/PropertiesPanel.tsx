@@ -9,7 +9,7 @@ import {
   LayoutGrid, Rows3, Square,
   WrapText, StretchHorizontal,
   Space, AlignHorizontalSpaceBetween, AlignHorizontalSpaceAround, AlignVerticalDistributeCenter,
-  X
+  X, MousePointerClick, ExternalLink, MessageSquare, FileText
 } from 'lucide-react'
 
 interface ControlRowProps {
@@ -830,7 +830,103 @@ export default function PropertiesPanel() {
             </div>
           </ControlRow>
         </CollapsibleSection>
+
+        {/* Events */}
+        {['button', 'container', 'flex', 'grid'].includes(node.type) && (
+          <EventsSection node={node} />
+        )}
       </div>
     </div>
+  )
+}
+
+function EventsSection({ node }: { node: { id: string; type: string; props: Record<string, unknown> } }) {
+  const updateProps = useStore((s) => s.updateProps)
+  const root = useStore((s) => s.root)
+  const pages = useStore((s) => s.pages)
+
+  const eventConfig = (node.props.event as { onClick?: { type: string; target?: string } }) || {}
+  const onClick = eventConfig.onClick || { type: 'none' }
+
+  const setEvent = (partial: { onClick?: { type: string; target?: string } }) => {
+    updateProps(node.id, {
+      event: { ...eventConfig, ...partial },
+    })
+  }
+
+  // Find all dialog nodes in the tree
+  const dialogs: { id: string; label: string }[] = []
+  const findDialogs = (n: typeof root) => {
+    if (n.type === 'dialog') {
+      dialogs.push({ id: n.id, label: (n.props.title as string) || 'Dialog' })
+    }
+    n.children.forEach(findDialogs)
+  }
+  findDialogs(root)
+
+  return (
+    <CollapsibleSection title="Events" color="text-orange-400" defaultOpen={true}>
+      <ControlRow label="On Click">
+        <select
+          value={onClick.type}
+          onChange={(e) => {
+            const type = e.target.value
+            setEvent({ onClick: { type, target: type === 'none' ? undefined : onClick.target } })
+          }}
+          className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
+        >
+          <option value="none">None</option>
+          <option value="openDialog">Open Dialog</option>
+          <option value="navigateToPage">Navigate to Page</option>
+          <option value="navigateToUrl">Navigate to URL</option>
+        </select>
+      </ControlRow>
+
+      {onClick.type === 'openDialog' && (
+        <ControlRow label="Dialog">
+          <select
+            value={onClick.target || ''}
+            onChange={(e) => setEvent({ onClick: { type: 'openDialog', target: e.target.value } })}
+            className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
+          >
+            <option value="">Select dialog...</option>
+            {dialogs.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+        </ControlRow>
+      )}
+
+      {onClick.type === 'navigateToPage' && (
+        <ControlRow label="Page">
+          <select
+            value={onClick.target || ''}
+            onChange={(e) => setEvent({ onClick: { type: 'navigateToPage', target: e.target.value } })}
+            className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
+          >
+            <option value="">Select page...</option>
+            {pages.map((p) => (
+              <option key={p.id} value={p.slug}>
+                {p.name} (/{p.slug})
+              </option>
+            ))}
+          </select>
+        </ControlRow>
+      )}
+
+      {onClick.type === 'navigateToUrl' && (
+        <ControlRow label="URL">
+          <input
+            type="text"
+            value={onClick.target || ''}
+            onChange={(e) => setEvent({ onClick: { type: 'navigateToUrl', target: e.target.value } })}
+            placeholder="https://..."
+            className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
+          />
+        </ControlRow>
+      )}
+    </CollapsibleSection>
   )
 }

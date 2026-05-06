@@ -13,7 +13,7 @@ import Switch from '../components/library/Switch'
 import { useStore } from '../core/store'
 import { usePreview } from '../core/previewContext'
 import { cn } from '../lib/utils'
-import type { ComponentNode, AnimationConfig, InteractiveConfig } from '../core/types'
+import type { ComponentNode, AnimationConfig, InteractiveConfig, EventConfig } from '../core/types'
 
 interface NodeRendererProps {
   node: ComponentNode
@@ -214,6 +214,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const preview = usePreview()
   const selectedId = useStore((s) => s.selectedId)
   const selectNode = useStore((s) => s.selectNode)
+  const root = useStore((s) => s.root)
   const isSelected = selectedId === node.id
   const [playTick, setPlayTick] = useState(0)
 
@@ -241,6 +242,26 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
     if (preview) return
     e.stopPropagation()
     selectNode(node.id)
+  }
+
+  const handleEventClick = (e: React.MouseEvent) => {
+    if (!preview) return
+    const eventConfig = node.props.event as EventConfig | undefined
+    if (!eventConfig?.onClick || eventConfig.onClick.type === 'none') return
+    
+    const { type, target } = eventConfig.onClick
+    if (type === 'navigateToUrl' && target) {
+      window.open(target, '_blank')
+    } else if (type === 'navigateToPage' && target) {
+      // In preview, just show an alert for now
+      alert(`Navigate to page: /${target}`)
+    } else if (type === 'openDialog' && target) {
+      // Find dialog and open it
+      const dialogNode = findNode(root, target)
+      if (dialogNode) {
+        window.dispatchEvent(new CustomEvent('artbuilder:open-dialog', { detail: target }))
+      }
+    }
   }
 
   const anim = node.props.animation as AnimationConfig | undefined
@@ -274,7 +295,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => setRadioSelected((s) => !s)}
+          onClick={(e) => { handleEventClick(e); setRadioSelected((s) => !s) }}
           className={baseClass}
           style={{
             ...baseStyle,
@@ -297,7 +318,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
           ref={preview ? undefined : setNodeRef}
           className={baseClass}
           style={baseStyle}
-          onClick={handleClick}
+          onClick={(e) => { handleEventClick(e); handleClick(e) }}
           data-node-id={node.id}
           {...interactiveProps}
         >
@@ -331,7 +352,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
         ref={preview ? undefined : setNodeRef}
         className={baseClass}
         style={baseStyle}
-        onClick={handleClick}
+        onClick={(e) => { handleEventClick(e); handleClick(e) }}
         data-node-id={node.id}
       >
         {children}
@@ -345,7 +366,7 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
   const commonProps: React.HTMLAttributes<HTMLElement> = {
     className: baseClass,
     style: baseStyle,
-    onClick: handleClick,
+    onClick: (e) => { handleEventClick(e); handleClick(e) },
     'data-node-id': node.id,
   }
 

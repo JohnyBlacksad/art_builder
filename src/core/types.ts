@@ -36,6 +36,13 @@ export interface InteractiveConfig {
   focusRingColor: string
 }
 
+export interface EventConfig {
+  onClick?: {
+    type: 'none' | 'openDialog' | 'navigateToPage' | 'navigateToUrl'
+    target?: string
+  }
+}
+
 export interface BaseProps {
   id?: string
   className?: string
