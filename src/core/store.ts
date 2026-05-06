@@ -7,12 +7,34 @@ export function generateId(): string {
   return `node_${++idCounter}_${Date.now().toString(36)}`
 }
 
+let pageIdCounter = 0
+export function generatePageId(): string {
+  return `page_${++pageIdCounter}_${Date.now().toString(36)}`
+}
+
 export function createNode(type: ComponentType, props: Record<string, unknown> = {}, children: ComponentNode[] = []): ComponentNode {
   return {
     id: generateId(),
     type,
     props,
     children,
+  }
+}
+
+function createDefaultRoot(): ComponentNode {
+  return {
+    id: 'root',
+    type: 'container',
+    props: {
+      style: {
+        position: 'relative',
+        minHeight: '100vh',
+        padding: '24px',
+        backgroundColor: '#ffffff',
+        overflow: 'hidden',
+      } as React.CSSProperties,
+    },
+    children: [],
   }
 }
 
@@ -83,19 +105,17 @@ function moveInParent(root: ComponentNode, nodeId: string, direction: -1 | 1): v
   parent.children[newIdx] = temp
 }
 
-const defaultRoot: ComponentNode = {
-  id: 'root',
-  type: 'container',
-  props: {
-    style: {
-      position: 'relative',
-      minHeight: '100vh',
-      padding: '24px',
-      backgroundColor: '#ffffff',
-      overflow: 'hidden',
-    } as React.CSSProperties,
-  },
-  children: [],
+export interface Page {
+  id: string
+  name: string
+  root: ComponentNode
+}
+
+const defaultRoot = createDefaultRoot()
+const homePage: Page = {
+  id: generatePageId(),
+  name: 'Home',
+  root: JSON.parse(JSON.stringify(defaultRoot)),
 }
 
 const MAX_HISTORY = 50
@@ -106,6 +126,9 @@ interface HistoryEntry {
 }
 
 interface Store extends EditorState {
+  pages: Page[]
+  currentPageId: string
+
   history: HistoryEntry[]
   historyIndex: number
   canUndo: boolean
@@ -123,6 +146,12 @@ interface Store extends EditorState {
   setRoot: (root: ComponentNode) => void
   undo: () => void
   redo: () => void
+
+  // Pages
+  addPage: (name?: string) => void
+  deletePage: (id: string) => void
+  renamePage: (id: string, name: string) => void
+  setCurrentPage: (id: string) => void
 }
 
 function pushHistory(state: Store) {
@@ -142,11 +171,20 @@ function pushHistory(state: Store) {
   state.canRedo = false
 }
 
+function syncCurrentPage(state: Store) {
+  const page = state.pages.find(p => p.id === state.currentPageId)
+  if (page) {
+    page.root = JSON.parse(JSON.stringify(state.root))
+  }
+}
+
 export const useStore = create<Store>()(
   immer((set) => ({
-    root: defaultRoot,
+    root: JSON.parse(JSON.stringify(defaultRoot)),
     selectedId: null,
     zoom: 1,
+    pages: [homePage],
+    currentPageId: homePage.id,
     history: [{ root: JSON.parse(JSON.stringify(defaultRoot)), selectedId: null }],
     historyIndex: 0,
     canUndo: false,
@@ -165,6 +203,7 @@ export const useStore = create<Store>()(
         const node = createNode(type, props)
         insertNode(parent, node, index)
         state.selectedId = node.id
+        syncCurrentPage(state)
       }),
 
     addNodes: (nodes, parentId) =>
@@ -176,6 +215,7 @@ export const useStore = create<Store>()(
           insertNode(parent, node)
         }
         if (nodes.length > 0) state.selectedId = nodes[0].id
+        syncCurrentPage(state)
       }),
 
     removeNode: (id) =>
@@ -184,6 +224,7 @@ export const useStore = create<Store>()(
         pushHistory(state)
         removeNode(state.root, id)
         if (state.selectedId === id) state.selectedId = null
+        syncCurrentPage(state)
       }),
 
     updateProps: (id, props) =>
@@ -192,24 +233,28 @@ export const useStore = create<Store>()(
         const node = findNode(state.root, id)
         if (!node) return
         node.props = { ...node.props, ...props }
+        syncCurrentPage(state)
       }),
 
     moveNode: (nodeId, targetParentId, index) =>
       set((state) => {
         pushHistory(state)
         moveNodeInternal(state.root, nodeId, targetParentId, index)
+        syncCurrentPage(state)
       }),
 
     moveUp: (nodeId) =>
       set((state) => {
         pushHistory(state)
         moveInParent(state.root, nodeId, -1)
+        syncCurrentPage(state)
       }),
 
     moveDown: (nodeId) =>
       set((state) => {
         pushHistory(state)
         moveInParent(state.root, nodeId, 1)
+        syncCurrentPage(state)
       }),
 
     setZoom: (zoom) =>
@@ -225,6 +270,7 @@ export const useStore = create<Store>()(
         state.canUndo = false
         state.canRedo = false
         state.selectedId = null
+        syncCurrentPage(state)
       }),
 
     undo: () =>
@@ -236,6 +282,7 @@ export const useStore = create<Store>()(
         state.selectedId = entry.selectedId
         state.canUndo = state.historyIndex > 0
         state.canRedo = state.historyIndex < state.history.length - 1
+        syncCurrentPage(state)
       }),
 
     redo: () =>
@@ -247,6 +294,66 @@ export const useStore = create<Store>()(
         state.selectedId = entry.selectedId
         state.canUndo = state.historyIndex > 0
         state.canRedo = state.historyIndex < state.history.length - 1
+        syncCurrentPage(state)
+      }),
+
+    // Pages
+    addPage: (name) =>
+      set((state) => {
+        const newPage: Page = {
+          id: generatePageId(),
+          name: name || `Page ${state.pages.length + 1}`,
+          root: createDefaultRoot(),
+        }
+        state.pages.push(newPage)
+        // Switch to new page
+        syncCurrentPage(state)
+        state.currentPageId = newPage.id
+        state.root = JSON.parse(JSON.stringify(newPage.root))
+        state.selectedId = null
+        state.history = [{ root: JSON.parse(JSON.stringify(newPage.root)), selectedId: null }]
+        state.historyIndex = 0
+        state.canUndo = false
+        state.canRedo = false
+      }),
+
+    deletePage: (id) =>
+      set((state) => {
+        if (state.pages.length <= 1) return // Can't delete last page
+        const idx = state.pages.findIndex(p => p.id === id)
+        if (idx === -1) return
+        state.pages.splice(idx, 1)
+        if (state.currentPageId === id) {
+          // Switch to first remaining page
+          const firstPage = state.pages[0]
+          state.currentPageId = firstPage.id
+          state.root = JSON.parse(JSON.stringify(firstPage.root))
+          state.selectedId = null
+          state.history = [{ root: JSON.parse(JSON.stringify(firstPage.root)), selectedId: null }]
+          state.historyIndex = 0
+          state.canUndo = false
+          state.canRedo = false
+        }
+      }),
+
+    renamePage: (id, name) =>
+      set((state) => {
+        const page = state.pages.find(p => p.id === id)
+        if (page) page.name = name
+      }),
+
+    setCurrentPage: (id) =>
+      set((state) => {
+        const page = state.pages.find(p => p.id === id)
+        if (!page || state.currentPageId === id) return
+        syncCurrentPage(state)
+        state.currentPageId = id
+        state.root = JSON.parse(JSON.stringify(page.root))
+        state.selectedId = null
+        state.history = [{ root: JSON.parse(JSON.stringify(page.root)), selectedId: null }]
+        state.historyIndex = 0
+        state.canUndo = false
+        state.canRedo = false
       }),
   }))
 )

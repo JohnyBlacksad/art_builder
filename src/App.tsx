@@ -8,10 +8,11 @@ import { PreviewContext } from './core/previewContext'
 import type { ComponentType, ComponentNode } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
 import LayersPanel from './components/LayersPanel'
+import PagesPanel from './components/PagesPanel'
 import PropertiesPanel from './components/PropertiesPanel'
 import Canvas from './components/Canvas'
 import Toolbar from './components/Toolbar'
-import { Layers, Library } from 'lucide-react'
+import { Layers, Library, FileText } from 'lucide-react'
 
 const isPreview = new URLSearchParams(window.location.search).has('preview')
 
@@ -23,7 +24,7 @@ export default function App() {
   const [dragType, setDragType] = useState<ComponentType | null>(null)
   const [dragLabel, setDragLabel] = useState<string>('')
   const [previewReady, setPreviewReady] = useState(false)
-  const [leftPanel, setLeftPanel] = useState<'library' | 'layers'>('library')
+  const [leftPanel, setLeftPanel] = useState<'library' | 'layers' | 'pages'>('library')
 
   useEffect(() => {
     if (isPreview) {
@@ -125,8 +126,19 @@ export default function App() {
                   <Layers className="w-3.5 h-3.5" />
                   Layers
                 </button>
+                <button
+                  onClick={() => setLeftPanel('pages')}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium transition-all border-b-2 ${
+                    leftPanel === 'pages'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Pages
+                </button>
               </div>
-              {leftPanel === 'library' ? <ComponentPanel /> : <LayersPanel />}
+              {leftPanel === 'library' ? <ComponentPanel /> : leftPanel === 'layers' ? <LayersPanel /> : <PagesPanel />}
             </div>
             <Canvas />
             <PropertiesPanel />

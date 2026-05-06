@@ -104,7 +104,10 @@ export default function Toolbar() {
 
         <button
           onClick={() => {
-            localStorage.setItem('artbuilder:preview', JSON.stringify(root))
+            const pages = useStore.getState().pages
+            const currentPageId = useStore.getState().currentPageId
+            const currentPage = pages.find(p => p.id === currentPageId)
+            localStorage.setItem('artbuilder:preview', JSON.stringify(currentPage?.root || root))
             window.open(`${window.location.pathname}?preview=1`, '_blank')
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium transition-colors"
