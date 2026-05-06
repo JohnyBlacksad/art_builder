@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useStore } from '../core/store'
 import { componentRegistry } from '../core/registry'
+import PopupSettingsPanel from './PopupSettingsPanel'
+import ColorPicker from './ColorPicker'
 import {
-  Trash2, ArrowUp, ArrowDown, Play,
+  Trash2, ArrowUp, ArrowDown, Play, Copy, ClipboardPaste, Palette,
   ChevronDown, ChevronRight,
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   AlignStartVertical, AlignCenterVertical, AlignEndVertical,
@@ -164,9 +166,15 @@ export default function PropertiesPanel() {
   const root = useStore((s) => s.root)
   const updateProps = useStore((s) => s.updateProps)
   const removeNode = useStore((s) => s.removeNode)
+  const duplicateNode = useStore((s) => s.duplicateNode)
+  const copyStyle = useStore((s) => s.copyStyle)
+  const pasteStyle = useStore((s) => s.pasteStyle)
+  const copiedStyle = useStore((s) => s.copiedStyle)
   const selectNode = useStore((s) => s.selectNode)
   const moveUp = useStore((s) => s.moveUp)
   const moveDown = useStore((s) => s.moveDown)
+
+  const currentPopupId = useStore((s) => s.currentPopupId)
 
   if (!selectedId) {
     return (
@@ -174,8 +182,17 @@ export default function PropertiesPanel() {
         <div className="p-4 border-b border-sidebar-border">
           <h2 className="text-sm font-semibold text-slate-100 uppercase tracking-wider">Properties</h2>
         </div>
-        <div className="flex-1 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
-          Click any element on the canvas to edit it
+        <div className="flex-1 overflow-y-auto">
+          {currentPopupId && (
+            <div className="p-4">
+              <PopupSettingsPanel />
+            </div>
+          )}
+          {!currentPopupId && (
+            <div className="flex-1 flex items-center justify-center text-slate-500 text-sm p-4 text-center">
+              Click any element on the canvas to edit it
+            </div>
+          )}
         </div>
       </div>
     )
@@ -239,16 +256,42 @@ export default function PropertiesPanel() {
             <button
               onClick={() => moveUp(node.id)}
               className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
-              title="Move up"
+              title="Move up (Ctrl+↑)"
             >
               <ArrowUp className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => moveDown(node.id)}
               className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
-              title="Move down"
+              title="Move down (Ctrl+↓)"
             >
               <ArrowDown className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => duplicateNode(node.id)}
+              className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+              title="Duplicate (Ctrl+Shift+D)"
+            >
+              <Copy className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => copyStyle(node.id)}
+              className="p-1.5 rounded-md hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors"
+              title="Copy Style (Alt+C)"
+            >
+              <Palette className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => pasteStyle(node.id)}
+              disabled={!copiedStyle}
+              className={`p-1.5 rounded-md transition-colors ${
+                copiedStyle
+                  ? 'hover:bg-slate-700 text-slate-400 hover:text-slate-200'
+                  : 'text-slate-700 cursor-not-allowed'
+              }`}
+              title={copiedStyle ? 'Paste Style (Alt+V)' : 'No style copied (copy style first)'}
+            >
+              <ClipboardPaste className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => {
@@ -256,7 +299,7 @@ export default function PropertiesPanel() {
                 selectNode(null)
               }}
               className="p-1.5 rounded-md hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors"
-              title="Delete"
+              title="Delete (Del)"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -352,20 +395,10 @@ export default function PropertiesPanel() {
               </div>
             </ControlRow>
             <ControlRow label="Color">
-              <div className="flex gap-1 flex-1">
-                <input
-                  type="color"
-                  value={(node.props.color as string)?.startsWith('#') ? (node.props.color as string) : '#3b82f6'}
-                  onChange={(e) => updateProps(node.id, { color: e.target.value })}
-                  className="w-8 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
-                />
-                <input
-                  type="text"
-                  value={String(node.props.color || '')}
-                  onChange={(e) => updateProps(node.id, { color: e.target.value })}
-                  className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60 transition-all"
-                />
-              </div>
+              <ColorPicker
+                color={String(node.props.color || '#3b82f6')}
+                onChange={(c) => updateProps(node.id, { color: c })}
+              />
             </ControlRow>
             <ControlRow label="Speed">
               <div className="flex items-center gap-1 flex-1">
@@ -535,30 +568,16 @@ export default function PropertiesPanel() {
         {/* Appearance */}
         <CollapsibleSection title="Appearance" color="text-blue-400" defaultOpen={true}>
           <ControlRow label="Background">
-            <div className="flex gap-1 flex-1">
-              <input
-                type="color"
-                value={style.backgroundColor?.startsWith('#') ? style.backgroundColor : '#000000'}
-                onChange={(e) => setStyle('backgroundColor', e.target.value)}
-                className="w-8 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
-              />
-              <StyleInput
-                value={style.backgroundColor || ''}
-                onChange={(v) => setStyle('backgroundColor', v)}
-                placeholder="transparent"
-              />
-            </div>
+            <ColorPicker
+              color={style.backgroundColor || ''}
+              onChange={(c) => setStyle('backgroundColor', c)}
+            />
           </ControlRow>
           <ControlRow label="Text Color">
-            <div className="flex gap-1 flex-1">
-              <input
-                type="color"
-                value={style.color?.startsWith('#') ? style.color : '#000000'}
-                onChange={(e) => setStyle('color', e.target.value)}
-                className="w-8 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
-              />
-              <StyleInput value={style.color || ''} onChange={(v) => setStyle('color', v)} placeholder="inherit" />
-            </div>
+            <ColorPicker
+              color={style.color || ''}
+              onChange={(c) => setStyle('color', c)}
+            />
           </ControlRow>
           <ControlRow label="Radius">
             <StyleInput value={style.borderRadius || ''} onChange={(v) => setStyle('borderRadius', v)} placeholder="0" />
@@ -567,15 +586,10 @@ export default function PropertiesPanel() {
             <StyleInput value={style.borderWidth || ''} onChange={(v) => setStyle('borderWidth', v)} placeholder="0" />
           </ControlRow>
           <ControlRow label="Border Color">
-            <div className="flex gap-1 flex-1">
-              <input
-                type="color"
-                value={style.borderColor?.startsWith('#') ? style.borderColor : '#000000'}
-                onChange={(e) => setStyle('borderColor', e.target.value)}
-                className="w-8 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
-              />
-              <StyleInput value={style.borderColor || ''} onChange={(v) => setStyle('borderColor', v)} placeholder="none" />
-            </div>
+            <ColorPicker
+              color={style.borderColor || ''}
+              onChange={(c) => setStyle('borderColor', c)}
+            />
           </ControlRow>
           <ControlRow label="Shadow">
             <StyleInput
@@ -835,6 +849,13 @@ export default function PropertiesPanel() {
         {['button', 'container', 'flex', 'grid'].includes(node.type) && (
           <EventsSection node={node} />
         )}
+
+        {/* Popup Settings */}
+        {currentPopupId && (
+          <div className="mt-4 pt-4 border-t border-sidebar-border">
+            <PopupSettingsPanel />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -842,8 +863,8 @@ export default function PropertiesPanel() {
 
 function EventsSection({ node }: { node: { id: string; type: string; props: Record<string, unknown> } }) {
   const updateProps = useStore((s) => s.updateProps)
-  const root = useStore((s) => s.root)
   const pages = useStore((s) => s.pages)
+  const popups = useStore((s) => s.popups)
 
   const eventConfig = (node.props.event as { onClick?: { type: string; target?: string } }) || {}
   const onClick = eventConfig.onClick || { type: 'none' }
@@ -853,16 +874,6 @@ function EventsSection({ node }: { node: { id: string; type: string; props: Reco
       event: { ...eventConfig, ...partial },
     })
   }
-
-  // Find all dialog nodes in the tree
-  const dialogs: { id: string; label: string }[] = []
-  const findDialogs = (n: typeof root) => {
-    if (n.type === 'dialog') {
-      dialogs.push({ id: n.id, label: (n.props.title as string) || 'Dialog' })
-    }
-    n.children.forEach(findDialogs)
-  }
-  findDialogs(root)
 
   return (
     <CollapsibleSection title="Events" color="text-orange-400" defaultOpen={true}>
@@ -876,23 +887,23 @@ function EventsSection({ node }: { node: { id: string; type: string; props: Reco
           className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
         >
           <option value="none">None</option>
-          <option value="openDialog">Open Dialog</option>
+          <option value="openDialog">Open Popup</option>
           <option value="navigateToPage">Navigate to Page</option>
           <option value="navigateToUrl">Navigate to URL</option>
         </select>
       </ControlRow>
 
       {onClick.type === 'openDialog' && (
-        <ControlRow label="Dialog">
+        <ControlRow label="Popup">
           <select
             value={onClick.target || ''}
             onChange={(e) => setEvent({ onClick: { type: 'openDialog', target: e.target.value } })}
             className="flex-1 min-w-0 bg-slate-900/50 border border-slate-700/50 rounded-md px-2 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-blue-500/60"
           >
-            <option value="">Select dialog...</option>
-            {dialogs.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
+            <option value="">Select popup...</option>
+            {popups.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
               </option>
             ))}
           </select>

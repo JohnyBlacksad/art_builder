@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { DndContext, type DragEndEvent, type DragStartEvent, DragOverlay, pointerWithin } from '@dnd-kit/core'
+import { ErrorBoundary } from 'react-error-boundary'
+import { Toaster, toast } from 'sonner'
 import { useStore } from './core/store'
 import { componentRegistry } from './core/registry'
 import { presetRegistry } from './core/presets'
@@ -9,10 +11,15 @@ import type { ComponentType, ComponentNode } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
 import LayersPanel from './components/LayersPanel'
 import PagesPanel from './components/PagesPanel'
+import PopupsPanel from './components/PopupsPanel'
+import PopupEditor from './components/PopupEditor'
 import PropertiesPanel from './components/PropertiesPanel'
 import Canvas from './components/Canvas'
 import Toolbar from './components/Toolbar'
-import { Layers, Library, FileText } from 'lucide-react'
+import ErrorFallback from './components/ErrorFallback'
+import { Layers, Library, FileText, MousePointerClick } from 'lucide-react'
+import PopupPreview from './components/PopupPreview'
+import PopupTriggers from './components/PopupTriggers'
 
 const isPreview = new URLSearchParams(window.location.search).has('preview')
 
@@ -21,25 +28,72 @@ export default function App() {
   const addNodes = useStore((s) => s.addNodes)
   const moveNode = useStore((s) => s.moveNode)
   const setRoot = useStore((s) => s.setRoot)
+  const setPopups = useStore((s) => s.setPopups)
   const [dragType, setDragType] = useState<ComponentType | null>(null)
   const [dragLabel, setDragLabel] = useState<string>('')
   const [previewReady, setPreviewReady] = useState(false)
-  const [leftPanel, setLeftPanel] = useState<'library' | 'layers' | 'pages'>('library')
+  const [leftPanel, setLeftPanel] = useState<'library' | 'layers' | 'pages' | 'popups'>('library')
+  const currentPopupId = useStore((s) => s.currentPopupId)
+  const selectedId = useStore((s) => s.selectedId)
+  const selectNode = useStore((s) => s.selectNode)
+  const removeNode = useStore((s) => s.removeNode)
+  const zoom = useStore((s) => s.zoom)
+  const setZoom = useStore((s) => s.setZoom)
+
+  useEffect(() => {
+    if (!isPreview) {
+      const handler = (e: KeyboardEvent) => {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (selectedId && selectedId !== 'root') {
+            e.preventDefault()
+            removeNode(selectedId)
+            selectNode(null)
+            toast.success('Element deleted')
+          }
+        }
+        if (e.key === 'Escape') {
+          selectNode(null)
+        }
+      }
+      window.addEventListener('keydown', handler, { capture: true })
+      return () => window.removeEventListener('keydown', handler, { capture: true })
+    }
+  }, [selectedId, removeNode, selectNode])
+
+  useEffect(() => {
+    if (!isPreview) {
+      const handler = (e: WheelEvent) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault()
+          const delta = e.deltaY > 0 ? -0.1 : 0.1
+          const newZoom = Math.max(0.25, Math.min(2, zoom + delta))
+          setZoom(newZoom)
+        }
+      }
+      window.addEventListener('wheel', handler, { passive: false })
+      return () => window.removeEventListener('wheel', handler)
+    }
+  }, [zoom, setZoom])
 
   useEffect(() => {
     if (isPreview) {
       const saved = localStorage.getItem('artbuilder:preview')
       if (saved) {
         try {
-          const parsed = JSON.parse(saved) as ComponentNode
-          setRoot(parsed)
+          const parsed = JSON.parse(saved) as { root: ComponentNode; popups: any[] }
+          if (parsed.root) {
+            setRoot(parsed.root)
+          }
+          if (parsed.popups) {
+            setPopups(parsed.popups)
+          }
         } catch {
-          // ignore parse error
+          toast.error('Failed to load preview data')
         }
       }
       setPreviewReady(true)
     }
-  }, [setRoot])
+  }, [setRoot, setPopups])
 
   const handleDragStart = (event: DragStartEvent) => {
     const data = event.active.data.current
@@ -84,8 +138,13 @@ export default function App() {
       <PreviewContext.Provider value={true}>
         <DndContext collisionDetection={pointerWithin}>
           <div className="h-screen bg-white overflow-auto">
-            <Canvas key={previewReady ? 'ready' : 'loading'} />
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              <Canvas key={previewReady ? 'ready' : 'loading'} />
+            </ErrorBoundary>
+            <PopupTriggers />
+            <PopupPreview />
           </div>
+          <Toaster position="bottom-right" richColors />
         </DndContext>
       </PreviewContext.Provider>
     )
@@ -137,10 +196,23 @@ export default function App() {
                   <FileText className="w-3.5 h-3.5" />
                   Pages
                 </button>
+                <button
+                  onClick={() => setLeftPanel('popups')}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium transition-all border-b-2 ${
+                    leftPanel === 'popups'
+                      ? 'border-purple-500 text-purple-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <MousePointerClick className="w-3.5 h-3.5" />
+                  Popups
+                </button>
               </div>
-              {leftPanel === 'library' ? <ComponentPanel /> : leftPanel === 'layers' ? <LayersPanel /> : <PagesPanel />}
+              {leftPanel === 'library' ? <ComponentPanel /> : leftPanel === 'layers' ? <LayersPanel /> : leftPanel === 'pages' ? <PagesPanel /> : <PopupsPanel />}
             </div>
-            <Canvas />
+            <ErrorBoundary FallbackComponent={ErrorFallback}>
+              {currentPopupId ? <PopupEditor /> : <Canvas />}
+            </ErrorBoundary>
             <PropertiesPanel />
           </div>
         </div>

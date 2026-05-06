@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import {
   Square, Rows, Grid3x3, Heading, Type, MousePointerClick, Image, Minus, MoveVertical,
   Menu, Layout, CreditCard, PanelBottom, Tags, MessageSquare, BarChart3, Megaphone, Mail, Images, Box, Sparkles, Code, Video, Atom, Clapperboard, Palette,
-  Diamond, Zap, Sunrise, Flame, ListCollapse, ChevronDown, HelpCircle, SlidersHorizontal, ToggleLeft, NotebookTabs,
+  Diamond, Zap, Sunrise, Flame, ListCollapse, ChevronDown, HelpCircle, SlidersHorizontal, ToggleLeft, NotebookTabs, Search,
   Columns3, Columns2, PanelLeft, LayoutTemplate, GalleryThumbnails
 } from 'lucide-react'
 import { loadCustomComponents } from '../core/customComponents'
@@ -348,6 +348,12 @@ function DraggablePrimitiveItem({ meta }: { meta: ComponentMeta }) {
 export default function ComponentPanel() {
   const [custom, setCustom] = useState<PresetMeta[]>([])
   const [activeTab, setActiveTab] = useState<'sections' | 'wireframes' | 'primitives'>('sections')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const matchesSearch = (label: string) => {
+    if (!searchQuery.trim()) return true
+    return label.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  }
 
   useEffect(() => {
     const refresh = () => setCustom(loadCustomComponents())
@@ -377,15 +383,25 @@ export default function ComponentPanel() {
     Wireframes: 'Wireframes',
   }
 
-  const sections = presetsByCategory['Sections'] || []
-  const uiPresets = presetsByCategory['UI'] || []
-  const wireframes = presetsByCategory['Wireframes'] || []
+  const sections = (presetsByCategory['Sections'] || []).filter(m => matchesSearch(m.label))
+  const uiPresets = (presetsByCategory['UI'] || []).filter(m => matchesSearch(m.label))
+  const wireframes = (presetsByCategory['Wireframes'] || []).filter(m => matchesSearch(m.label))
 
   return (
     <div className="w-72 h-full bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Header */}
       <div className="p-3 border-b border-sidebar-border">
         <h2 className="text-sm font-semibold text-slate-100 uppercase tracking-wider mb-3">Library</h2>
+        <div className="relative mb-2">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search components..."
+            className="w-full bg-slate-800/50 border border-slate-700/50 rounded-md pl-7 pr-2 py-1.5 text-[11px] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500/60"
+          />
+        </div>
         <div className="flex gap-1 bg-slate-800/50 rounded-lg p-0.5">
           {[
             { key: 'sections', label: 'Sections' },
@@ -437,13 +453,13 @@ export default function ComponentPanel() {
               </div>
             )}
 
-            {custom.length > 0 && (
+            {custom.filter(m => matchesSearch(m.label)).length > 0 && (
               <div>
                 <h3 className="text-[10px] font-medium text-emerald-400 uppercase tracking-wider mb-2 px-1">
                   My Components
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {custom.map((meta) => (
+                  {custom.filter(m => matchesSearch(m.label)).map((meta) => (
                     <DraggablePresetItem key={meta.id} meta={meta} />
                   ))}
                 </div>

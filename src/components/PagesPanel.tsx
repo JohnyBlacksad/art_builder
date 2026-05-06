@@ -43,7 +43,11 @@ export default function PagesPanel() {
   }
 
   const openPreview = (page: typeof pages[0]) => {
-    localStorage.setItem('artbuilder:preview', JSON.stringify(page.root))
+    const popups = useStore.getState().popups
+    localStorage.setItem('artbuilder:preview', JSON.stringify({
+      root: page.root,
+      popups,
+    }))
     window.open(`${window.location.pathname}?preview=1`, '_blank')
   }
 
@@ -159,7 +163,11 @@ export default function PagesPanel() {
                     </button>
                     {pages.length > 1 && (
                       <button
-                        onClick={(e) => { e.stopPropagation(); deletePage(page.id) }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deletePage(page.id)
+                          toast.success(`Page "${page.name}" deleted`)
+                        }}
                         className="p-1 rounded hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
                         title="Delete"
                       >

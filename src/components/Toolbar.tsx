@@ -5,6 +5,7 @@ import { exportToHTML } from '../core/exporter'
 import { saveCustomComponent } from '../core/customComponents'
 import HtmlImportModal from './HtmlImportModal'
 import { ZoomIn, ZoomOut, Monitor, Smartphone, Download, Undo2, Redo2, Save, FileCode, Eye } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function Toolbar() {
   const [showImport, setShowImport] = useState(false)
@@ -18,11 +19,16 @@ export default function Toolbar() {
   const redo = useStore((s) => s.redo)
   const canUndo = useStore((s) => s.canUndo)
   const canRedo = useStore((s) => s.canRedo)
+  const duplicateNode = useStore((s) => s.duplicateNode)
+  const copyStyle = useStore((s) => s.copyStyle)
+  const pasteStyle = useStore((s) => s.pasteStyle)
+  const copiedStyle = useStore((s) => s.copiedStyle)
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         e.preventDefault()
+        e.stopPropagation()
         if (e.shiftKey) {
           redo()
         } else {
@@ -31,12 +37,40 @@ export default function Toolbar() {
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
         e.preventDefault()
+        e.stopPropagation()
         redo()
       }
+      // Ctrl+Shift+D = Duplicate (Ctrl+D is browser bookmark)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selectedId && selectedId !== 'root') {
+          duplicateNode(selectedId)
+          toast.success('Element duplicated!')
+        }
+      }
+      // Alt+C = Copy Style
+      if (e.altKey && e.key === 'c') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selectedId && selectedId !== 'root') {
+          copyStyle(selectedId)
+          toast.success('Style copied!')
+        }
+      }
+      // Alt+V = Paste Style
+      if (e.altKey && e.key === 'v') {
+        e.preventDefault()
+        e.stopPropagation()
+        if (selectedId && selectedId !== 'root' && copiedStyle) {
+          pasteStyle(selectedId)
+          toast.success('Style pasted!')
+        }
+      }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [undo, redo])
+    window.addEventListener('keydown', handler, true)
+    return () => window.removeEventListener('keydown', handler, true)
+  }, [undo, redo, selectedId, duplicateNode, copyStyle, pasteStyle, copiedStyle])
 
   const handleExport = () => {
     const html = exportToHTML(root)
@@ -47,6 +81,7 @@ export default function Toolbar() {
     a.download = 'site.html'
     a.click()
     URL.revokeObjectURL(url)
+    toast.success('HTML exported successfully!')
   }
 
   return (
@@ -107,7 +142,11 @@ export default function Toolbar() {
         <button
           onClick={() => {
             const currentPage = pages.find(p => p.id === currentPageId)
-            localStorage.setItem('artbuilder:preview', JSON.stringify(currentPage?.root || root))
+            const popups = useStore.getState().popups
+            localStorage.setItem('artbuilder:preview', JSON.stringify({
+              root: currentPage?.root || root,
+              popups,
+            }))
             window.open(`${window.location.pathname}?preview=1`, '_blank')
           }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-white text-xs font-medium transition-colors"
@@ -141,6 +180,7 @@ export default function Toolbar() {
               if (node) {
                 saveCustomComponent(name, node)
                 window.dispatchEvent(new CustomEvent('artbuilder:refresh-library'))
+                toast.success(`Component "${name}" saved to library!`)
               }
             }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition-colors"

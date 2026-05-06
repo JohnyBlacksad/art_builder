@@ -13,6 +13,7 @@ import Switch from '../components/library/Switch'
 import { useStore } from '../core/store'
 import { usePreview } from '../core/previewContext'
 import { cn } from '../lib/utils'
+import { toast } from 'sonner'
 import type { ComponentNode, AnimationConfig, InteractiveConfig, EventConfig } from '../core/types'
 
 interface NodeRendererProps {
@@ -254,13 +255,10 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
       window.open(target, '_blank')
     } else if (type === 'navigateToPage' && target) {
       // In preview, just show an alert for now
-      alert(`Navigate to page: /${target}`)
+      toast.info(`Navigate to page: /${target}`)
     } else if (type === 'openDialog' && target) {
-      // Find dialog and open it
-      const dialogNode = findNode(root, target)
-      if (dialogNode) {
-        window.dispatchEvent(new CustomEvent('artbuilder:open-dialog', { detail: target }))
-      }
+      // Open popup by ID
+      window.dispatchEvent(new CustomEvent('artbuilder:open-dialog', { detail: target }))
     }
   }
 
