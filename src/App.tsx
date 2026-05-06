@@ -7,9 +7,11 @@ import { getCustomPreset } from './core/customComponents'
 import { PreviewContext } from './core/previewContext'
 import type { ComponentType, ComponentNode } from './core/types'
 import ComponentPanel from './components/ComponentPanel'
+import LayersPanel from './components/LayersPanel'
 import PropertiesPanel from './components/PropertiesPanel'
 import Canvas from './components/Canvas'
 import Toolbar from './components/Toolbar'
+import { Layers, Library } from 'lucide-react'
 
 const isPreview = new URLSearchParams(window.location.search).has('preview')
 
@@ -21,6 +23,7 @@ export default function App() {
   const [dragType, setDragType] = useState<ComponentType | null>(null)
   const [dragLabel, setDragLabel] = useState<string>('')
   const [previewReady, setPreviewReady] = useState(false)
+  const [leftPanel, setLeftPanel] = useState<'library' | 'layers'>('library')
 
   useEffect(() => {
     if (isPreview) {
@@ -97,7 +100,34 @@ export default function App() {
         <div className="h-screen flex flex-col bg-slate-950">
           <Toolbar />
           <div className="flex-1 flex overflow-hidden">
-            <ComponentPanel />
+            <div className="flex flex-col h-full">
+              {/* Left panel tabs */}
+              <div className="flex bg-sidebar border-b border-sidebar-border">
+                <button
+                  onClick={() => setLeftPanel('library')}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium transition-all border-b-2 ${
+                    leftPanel === 'library'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Library className="w-3.5 h-3.5" />
+                  Library
+                </button>
+                <button
+                  onClick={() => setLeftPanel('layers')}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-medium transition-all border-b-2 ${
+                    leftPanel === 'layers'
+                      ? 'border-blue-500 text-blue-400'
+                      : 'border-transparent text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Layers
+                </button>
+              </div>
+              {leftPanel === 'library' ? <ComponentPanel /> : <LayersPanel />}
+            </div>
             <Canvas />
             <PropertiesPanel />
           </div>
